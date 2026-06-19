@@ -357,24 +357,31 @@ function AuthScreen({onAuth}){
 
   const login=e=>{
     e.preventDefault();setErr('');setOk('');
-    if(!u.trim()||!p){setErr('Username and password are required.');return;}
+    if(!u.trim()||!p){setErr('Email and password are required.');return;}
     const users=getUsers();const user=users.find(x=>x.username.toLowerCase()===u.trim().toLowerCase());
     if(!user){setErr('Account not found. Please register first.');return;}
     if(user.ph!==h32(p)){setErr('Incorrect password. Please try again.');return;}
     const sess={userId:user.id,username:user.username,fullName:user.fullName||user.username,studyGoal:user.studyGoal||4,at:new Date().toISOString()};
     saveSession(sess);onAuth(sess);
   };
+  
   const register=e=>{
     e.preventDefault();setErr('');setOk('');
-    if(!u.trim()||u.trim().length<3){setErr('Username must be at least 3 characters.');return;}
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if(!u.trim()||!emailRegex.test(u.trim())){setErr('A valid email address is required.');return;}
     if(!fn.trim()||fn.trim().length<2){setErr('Please enter your full name.');return;}
-    if(!p||p.length<4){setErr('Password must be at least 4 characters.');return;}
+    if(!p||p.length<6){setErr('Password must be at least 6 characters.');return;}
+    if(!/[A-Z]/.test(p)){setErr('Password must contain at least one uppercase letter.');return;}
+    if(!/[a-z]/.test(p)){setErr('Password must contain at least one lowercase letter.');return;}
     if(p!==cp){setErr('Passwords do not match.');return;}
+    
     const users=getUsers();
-    if(users.some(x=>x.username.toLowerCase()===u.trim().toLowerCase())){setErr('Username already taken.');return;}
+    if(users.some(x=>x.username.toLowerCase()===u.trim().toLowerCase())){setErr('This email is already registered.');return;}
+    
     saveUsers([...users,{id:'u'+Date.now(),username:u.trim(),fullName:fn.trim(),studyGoal:goal,ph:h32(p),at:new Date().toISOString()}]);
     setOk('Account created successfully. Please sign in.');setTab('login');setP('');setCp('');
   };
+  
   const sw=t=>{setTab(t);setErr('');setOk('');};
   const inp='w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.09] rounded-lg text-slate-200 text-sm outline-none transition-all focus:border-sky-500/70 focus:bg-sky-500/5 placeholder:text-slate-600';
 
@@ -408,8 +415,8 @@ function AuthScreen({onAuth}){
             <form onSubmit=${login}>
               <h1 className="text-lg font-black mb-0.5">Welcome back</h1>
               <p className="text-slate-500 text-xs mb-5">Sign in to continue your learning progress</p>
-              <div className="mb-3"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username</label>
-                <input className=${inp} placeholder="your_username" value=${u} onInput=${e=>setU(e.target.value)} autoFocus/></div>
+              <div className="mb-3"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email</label>
+                <input className=${inp} type="email" placeholder="your@email.com" value=${u} onInput=${e=>setU(e.target.value)} autoFocus/></div>
               <div className="mb-5"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
                 <input className=${inp} type="password" placeholder="••••••••" value=${p} onInput=${e=>setP(e.target.value)}/></div>
               <button type="submit" className="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm rounded-lg border-none cursor-pointer transition-all">Sign In →</button>
@@ -418,25 +425,31 @@ function AuthScreen({onAuth}){
             <form onSubmit=${register}>
               <h1 className="text-lg font-black mb-0.5">Create account</h1>
               <p className="text-slate-500 text-xs mb-5">Register to track your Docker learning journey</p>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username</label>
-                  <input className=${inp} placeholder="username" value=${u} onInput=${e=>setU(e.target.value)} autoFocus/></div>
-                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
-                  <input className=${inp} placeholder="Jane Smith" value=${fn} onInput=${e=>setFn(e.target.value)}/></div>
+              
+              <div className="mb-3">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+                <input className=${inp} placeholder="Jane Smith" value=${fn} onInput=${e=>setFn(e.target.value)} autoFocus/>
               </div>
+              
+              <div className="mb-3">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email</label>
+                <input className=${inp} type="email" placeholder="your@email.com" value=${u} onInput=${e=>setU(e.target.value)}/>
+              </div>
+              
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
-                  <input className=${inp} type="password" placeholder="min. 4 chars" value=${p} onInput=${e=>setP(e.target.value)}/></div>
+                  <input className=${inp} type="password" placeholder="min. 6 chars" value=${p} onInput=${e=>setP(e.target.value)}/></div>
                 <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Confirm</label>
                   <input className=${inp} type="password" placeholder="repeat" value=${cp} onInput=${e=>setCp(e.target.value)}/></div>
               </div>
+              
               <div className="mb-5">
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Study Goal</label>
                 <select className=${inp+' cursor-pointer'} value=${goal} onChange=${e=>setGoal(parseInt(e.target.value))} style=${{background:'rgba(255,255,255,0.04)'}}>
-                  <option value=${4}>4 weeks (intensive — 10+ hrs/week)</option>
-                  <option value=${6}>6 weeks (regular — 7 hrs/week)</option>
-                  <option value=${8}>8 weeks (steady — 5 hrs/week)</option>
-                  <option value=${12}>12 weeks (casual — 3 hrs/week)</option>
+                  <option className="bg-slate-900 text-slate-200" value=${4}>4 weeks (intensive — 10+ hrs/week)</option>
+                  <option className="bg-slate-900 text-slate-200" value=${6}>6 weeks (regular — 7 hrs/week)</option>
+                  <option className="bg-slate-900 text-slate-200" value=${8}>8 weeks (steady — 5 hrs/week)</option>
+                  <option className="bg-slate-900 text-slate-200" value=${12}>12 weeks (casual — 3 hrs/week)</option>
                 </select>
               </div>
               <button type="submit" className="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm rounded-lg border-none cursor-pointer transition-all">Create Account →</button>
