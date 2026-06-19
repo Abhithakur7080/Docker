@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Docker Student Portal — Learning Management System</title>
   <meta name="description" content="Professional Docker LMS with sequential module locking, real-time study tracking, pace analysis, and student records."/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -38,6 +39,19 @@
     @media print{.no-print{display:none!important}.print-only{display:block!important}}
     .print-only{display:none}
     table{border-collapse:collapse;width:100%}
+    /* Fix for ASCII diagrams in Markdown */
+    .prose pre {
+      white-space: pre !important;
+      overflow-x: auto !important;
+      font-family: 'JetBrains Mono', 'Courier New', Courier, monospace !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+      line-height: 1.5 !important;
+      font-size: 0.85em !important;
+    }
+    .prose code {
+      font-family: 'JetBrains Mono', 'Courier New', Courier, monospace !important;
+    }
   </style>
 </head>
 <body class="bg-[#060b16] text-slate-200 h-full overflow-hidden" style="font-family:'Inter',sans-serif">
