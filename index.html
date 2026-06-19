@@ -379,8 +379,13 @@ function AuthScreen({onAuth}){
   const inp='w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.09] rounded-lg text-slate-200 text-sm outline-none transition-all focus:border-sky-500/70 focus:bg-sky-500/5 placeholder:text-slate-600';
 
   return html`<div className="min-h-screen flex items-center justify-center bg-[#060b16] relative overflow-hidden">
-    <div style=${{position:'absolute',top:'-10%',left:'-8%',width:'40%',height:'40%',background:'radial-gradient(ellipse,rgba(56,189,248,0.06),transparent 70%)',pointerEvents:'none'}}/>
-    <div style=${{position:'absolute',bottom:'-10%',right:'-5%',width:'35%',height:'40%',background:'radial-gradient(ellipse,rgba(129,140,248,0.07),transparent 70%)',pointerEvents:'none'}}/>
+    <!-- Subtle Grid Background -->
+    <div style=${{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',backgroundSize:'32px 32px',pointerEvents:'none'}}/>
+    <div style=${{position:'absolute',inset:0,background:'radial-gradient(circle at center, transparent 0%, #060b16 100%)',pointerEvents:'none'}}/>
+    
+    <!-- Ambient glowing orbs -->
+    <div style=${{position:'absolute',top:'-10%',left:'-8%',width:'50%',height:'50%',background:'radial-gradient(circle,rgba(56,189,248,0.08),transparent 70%)',pointerEvents:'none'}}/>
+    <div style=${{position:'absolute',bottom:'-10%',right:'-5%',width:'45%',height:'50%',background:'radial-gradient(circle,rgba(129,140,248,0.09),transparent 70%)',pointerEvents:'none'}}/>
     <div className="au relative z-10 w-[420px] max-w-[95vw]">
       <div className="text-center mb-8">
         <div className="text-4xl mb-3" style=${{filter:'drop-shadow(0 0 12px rgba(56,189,248,0.4))'}}>🐳</div>
