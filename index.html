@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Docker Student Portal — Learning Management System</title>
+  <meta name="description" content="Professional Docker LMS with sequential module locking, real-time study tracking, pace analysis, and student records."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','ui-sans-serif'],mono:['JetBrains Mono','ui-monospace']}}}}</script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/htm/dist/htm.umd.js"></script>
+  <script src="./course_data.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased}
+    #root{height:100%}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.15)}
+    .grad-text{background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .ring-ani{transition:stroke-dashoffset 0.9s cubic-bezier(0.4,0,0.2,1)}
+    .card-shine{position:absolute;inset:0;opacity:0;transition:opacity 0.25s;pointer-events:none;border-radius:inherit}
+    .mod-card:hover .card-shine{opacity:1}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideR{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.4}}
+    .au{animation:fadeUp 0.38s ease both}
+    .ai{animation:fadeIn 0.28s ease both}
+    .toast-ani{animation:slideR 0.28s ease both}
+    .pulse-dot{animation:pulse2 2s ease infinite}
+    @media print{.no-print{display:none!important}.print-only{display:block!important}}
+    .print-only{display:none}
+    table{border-collapse:collapse;width:100%}
+  </style>
+</head>
+<body class="bg-[#060b16] text-slate-200 h-full overflow-hidden" style="font-family:'Inter',sans-serif">
+<div id="root" class="h-full"></div>
+<script>
+const {useState,useEffect,useCallback,useMemo,useRef}=React;
+const html=htm.bind(React.createElement);
+const cx=(...a)=>a.filter(Boolean).join(' ');
+
+/* ═══════════════════════════════════════════════
+   COURSE DATA
+═══════════════════════════════════════════════ */
+const MODULES=[
+  {id:'01_basics',num:1,title:'Docker Basics',emoji:'🐳',level:'Beginner',lvlColor:'#22c55e',week:1,accent:'#38bdf8',
+   desc:'Core Docker concepts, CLI mastery, and your first Dockerfile.',hours:4,
+   files:['concepts.md','commands_cheatsheet.md','Dockerfile.hello'],
+   tasks:[
+    {id:'01-t1',title:'Read concepts.md',desc:'Images, containers, registry, daemon — foundational theory',type:'read',xp:20},
+    {id:'01-t2',title:'Study commands_cheatsheet.md',desc:'Essential Docker CLI commands reference sheet',type:'read',xp:20},
+    {id:'01-t3',title:'Run hello-world container',desc:'docker run hello-world — validate your Docker installation',type:'practice',xp:30},
+    {id:'01-t4',title:'Drill 5 core CLI commands',desc:'run · ps · stop · rm · images — repeat until fluent',type:'practice',xp:40},
+    {id:'01-t5',title:'Build & run Dockerfile.hello',desc:'docker build -t hello . && docker run hello',type:'build',xp:50},
+   ]},
+  {id:'02_images',num:2,title:'Docker Images',emoji:'📦',level:'Beginner',lvlColor:'#22c55e',week:1,accent:'#06b6d4',
+   desc:'Dockerfile deep dive, image optimization, and layer caching strategy.',hours:5,
+   files:['dockerfile_guide.md','Dockerfile.optimized','image_layers.md'],
+   tasks:[
+    {id:'02-t1',title:'Read dockerfile_guide.md',desc:'All Dockerfile instructions explained with examples',type:'read',xp:20},
+    {id:'02-t2',title:'Read image_layers.md',desc:'Layer caching mechanics and ideal ordering strategy',type:'read',xp:20},
+    {id:'02-t3',title:'Build Dockerfile.optimized',desc:'Compile the optimized multi-stage image from source',type:'build',xp:40},
+    {id:'02-t4',title:'Benchmark image sizes',desc:'Compare naive vs optimized: docker images ls --format',type:'practice',xp:50},
+    {id:'02-t5',title:'Push image to Docker Hub',desc:'docker tag + docker push — publish to public registry',type:'practice',xp:60},
+   ]},
+  {id:'03_compose',num:3,title:'Docker Compose',emoji:'🎼',level:'Beginner',lvlColor:'#22c55e',week:1,accent:'#4f46e5',
+   desc:'Multi-container orchestration with Docker Compose v2.',hours:5,
+   files:['compose_guide.md','docker-compose.yml','docker-compose.prod.yml'],
+   tasks:[
+    {id:'03-t1',title:'Read compose_guide.md',desc:'Compose file syntax, services, networks, volumes',type:'read',xp:20},
+    {id:'03-t2',title:'Run full-stack compose app',desc:'docker compose up -d — verify all services are healthy',type:'practice',xp:40},
+    {id:'03-t3',title:'Analyse docker-compose.prod.yml',desc:'Production override file patterns and security differences',type:'read',xp:20},
+    {id:'03-t4',title:'Add a Redis service',desc:'Extend docker-compose.yml — wire Redis to the web service',type:'build',xp:60},
+    {id:'03-t5',title:'Test horizontal scaling',desc:'docker compose up --scale web=3 — confirm load balancing',type:'practice',xp:50},
+   ]},
+  {id:'04_networking',num:4,title:'Networking',emoji:'🌐',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#8b5cf6',
+   desc:'Container networking, custom networks, and service discovery.',hours:4,
+   files:['networking_guide.md','docker-compose.yml'],
+   tasks:[
+    {id:'04-t1',title:'Read networking_guide.md',desc:'Bridge · host · overlay · macvlan — all driver types',type:'read',xp:20},
+    {id:'04-t2',title:'Create a custom bridge network',desc:'docker network create --driver bridge my-net',type:'practice',xp:40},
+    {id:'04-t3',title:'Test container DNS resolution',desc:'docker exec — ping containers by service name',type:'practice',xp:50},
+    {id:'04-t4',title:'Run networking compose example',desc:'Deploy and trace traffic through the compose network stack',type:'build',xp:40},
+    {id:'04-t5',title:'Inspect network config (JSON)',desc:'docker network inspect -- analyse the full output',type:'practice',xp:30},
+   ]},
+  {id:'05_storage',num:5,title:'Storage & Volumes',emoji:'💾',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#10b981',
+   desc:'Persistent data with named volumes, bind mounts, and tmpfs.',hours:4,
+   files:['volumes_guide.md','docker-compose.yml'],
+   tasks:[
+    {id:'05-t1',title:'Read volumes_guide.md',desc:'Named volumes · bind mounts · tmpfs — full comparison',type:'read',xp:20},
+    {id:'05-t2',title:'Create & mount a named volume',desc:'docker volume create + --mount flag + inspect persistence',type:'practice',xp:40},
+    {id:'05-t3',title:'Test bind mounts',desc:'Mount local host directory — observe live file sync',type:'practice',xp:40},
+    {id:'05-t4',title:'Run storage compose example',desc:'Verify data survives docker compose down + up cycle',type:'build',xp:50},
+    {id:'05-t5',title:'Create a volume backup',desc:'docker run + tar to create .tar.gz archive of volume data',type:'practice',xp:60},
+   ]},
+  {id:'06_multi_stage',num:6,title:'Multi-Stage Builds',emoji:'⚙️',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#f97316',
+   desc:'Dramatically reduce production image sizes with multi-stage Dockerfiles.',hours:3,
+   files:['multi_stage_guide.md','Dockerfile'],
+   tasks:[
+    {id:'06-t1',title:'Read multi_stage_guide.md',desc:'Builder pattern · COPY --from · target stages',type:'read',xp:20},
+    {id:'06-t2',title:'Build the multi-stage Dockerfile',desc:'docker build -t app:ms . — measure final image size',type:'build',xp:50},
+    {id:'06-t3',title:'Size comparison analysis',desc:'Single-stage vs multi-stage — document the reduction %',type:'practice',xp:40},
+    {id:'06-t4',title:'Add a dedicated test stage',desc:'Insert a RUN go test ./... stage before the final stage',type:'build',xp:60},
+   ]},
+  {id:'07_security',num:7,title:'Container Security',emoji:'🔒',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#ec4899',
+   desc:'Container hardening, vulnerability scanning, and principle of least privilege.',hours:5,
+   files:['security_guide.md','Dockerfile.secure'],
+   tasks:[
+    {id:'07-t1',title:'Read security_guide.md',desc:'CIS Docker Benchmark · seccomp · AppArmor · capabilities',type:'read',xp:20},
+    {id:'07-t2',title:'Build Dockerfile.secure',desc:'Apply non-root user, read-only fs, dropped capabilities',type:'build',xp:50},
+    {id:'07-t3',title:'Verify non-root execution',desc:'docker inspect + docker exec id — confirm UID != 0',type:'practice',xp:40},
+    {id:'07-t4',title:'CVE scan with Trivy',desc:'trivy image <image> -- triage HIGH/CRITICAL findings',type:'practice',xp:60},
+    {id:'07-t5',title:'Apply read-only root filesystem',desc:'docker run --read-only --tmpfs /tmp — validate workload',type:'practice',xp:50},
+   ]},
+  {id:'08_orchestration',num:8,title:'Orchestration',emoji:'🎯',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#6366f1',
+   desc:'Docker Swarm mode clustering and Kubernetes migration patterns.',hours:6,
+   files:['swarm_guide.md','k8s_migration.md'],
+   tasks:[
+    {id:'08-t1',title:'Read swarm_guide.md',desc:'Swarm architecture · managers · workers · RAFT consensus',type:'read',xp:20},
+    {id:'08-t2',title:'Read k8s_migration.md',desc:'Compose → Kubernetes migration patterns and tooling',type:'read',xp:20},
+    {id:'08-t3',title:'Initialise a Swarm cluster',desc:'docker swarm init -- note join token for worker nodes',type:'practice',xp:60},
+    {id:'08-t4',title:'Deploy a Swarm stack',desc:'docker stack deploy -c docker-compose.yml my_stack',type:'build',xp:70},
+    {id:'08-t5',title:'Rolling update & scale test',desc:'docker service scale web=3 + service update --image v2',type:'practice',xp:60},
+   ]},
+  {id:'09_cicd',num:9,title:'CI/CD Integration',emoji:'🔄',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#14b8a6',
+   desc:'Automated Docker builds, testing, and publishing via GitHub Actions & GitLab CI.',hours:5,
+   files:['cicd_guide.md','github_actions.yml','gitlab_ci.yml'],
+   tasks:[
+    {id:'09-t1',title:'Read cicd_guide.md',desc:'CI/CD pipeline architecture with Docker best practices',type:'read',xp:20},
+    {id:'09-t2',title:'Analyse github_actions.yml',desc:'OIDC auth · build-push-action · layer caching in GHA',type:'read',xp:20},
+    {id:'09-t3',title:'Implement GitHub Actions pipeline',desc:'Create .github/workflows/docker.yml from the template',type:'build',xp:80},
+    {id:'09-t4',title:'Analyse gitlab_ci.yml',desc:'GitLab DinD · docker:stable runner · registry auth',type:'read',xp:20},
+    {id:'09-t5',title:'Trigger automated build',desc:'Push a commit — verify pipeline executes and image publishes',type:'practice',xp:80},
+   ]},
+  {id:'10_production',num:10,title:'Production Deployment',emoji:'🏭',level:'Expert',lvlColor:'#a855f7',week:4,accent:'#f59e0b',
+   desc:'Production-grade stacks: health checks, restart policies, limits, and secrets.',hours:6,
+   files:['production_guide.md','docker-compose.prod.yml'],
+   tasks:[
+    {id:'10-t1',title:'Read production_guide.md',desc:'Production Docker checklist: 20+ critical items',type:'read',xp:20},
+    {id:'10-t2',title:'Deploy the prod compose stack',desc:'docker compose -f docker-compose.prod.yml up -d --wait',type:'build',xp:70},
+    {id:'10-t3',title:'Implement HEALTHCHECK directives',desc:'Add HEALTHCHECK with interval, timeout, retries to each image',type:'build',xp:60},
+    {id:'10-t4',title:'Validate restart policies',desc:'Test on-failure:5 · always · unless-stopped behaviours',type:'practice',xp:40},
+    {id:'10-t5',title:'Enforce resource limits',desc:'deploy.resources.limits: cpus + memory in compose file',type:'practice',xp:50},
+   ]},
+  {id:'11_monitoring',num:11,title:'Monitoring & Observability',emoji:'📊',level:'Expert',lvlColor:'#a855f7',week:4,accent:'#22c55e',
+   desc:'Prometheus, Grafana, and a full container observability stack.',hours:5,
+   files:['monitoring_guide.md','docker-compose.yml'],
+   tasks:[
+    {id:'11-t1',title:'Read monitoring_guide.md',desc:'Metrics · logs · traces — observability pillars for containers',type:'read',xp:20},
+    {id:'11-t2',title:'Deploy Prometheus + Grafana',desc:'docker compose up -- scrape cAdvisor + node-exporter',type:'build',xp:70},
+    {id:'11-t3',title:'Build Grafana dashboard',desc:'Panels: CPU · memory · net I/O · container count · uptime',type:'practice',xp:80},
+    {id:'11-t4',title:'Configure alert rules',desc:'PrometheusRule YAML + Alertmanager route + receiver',type:'build',xp:70},
+   ]},
+  {id:'12_best_practices',num:12,title:'Best Practices',emoji:'🏆',level:'Expert',lvlColor:'#a855f7',week:4,accent:'#38bdf8',
+   desc:'Master reference: the complete Docker best practices compendium.',hours:4,
+   files:['best_practices.md'],
+   tasks:[
+    {id:'12-t1',title:'Read best_practices.md (complete)',desc:'Full compendium — do not skim, read every section',type:'read',xp:30},
+    {id:'12-t2',title:'Audit an existing Dockerfile',desc:'Apply every checklist item — document all findings',type:'practice',xp:80},
+    {id:'12-t3',title:'Author a review checklist',desc:'Write your personal 20-item Docker review checklist',type:'build',xp:80},
+    {id:'12-t4',title:'Refactor a production stack',desc:'Apply all learned best practices to a real compose project',type:'build',xp:100},
+   ]},
+];
+
+const ALL_TASKS=MODULES.flatMap(m=>m.tasks);
+const TOTAL_TASKS=ALL_TASKS.length;
+const MAX_XP=ALL_TASKS.reduce((s,t)=>s+t.xp,0);
+
+const PLAN=[
+  {week:1,title:'Foundation Week',theme:'Docker core fundamentals — beginner to compose',color:'#22c55e',mods:['Docker Basics','Docker Images','Docker Compose'],
+   days:[
+    {day:'Monday',focus:'Basics — Core Concepts',min:95,tasks:[{type:'read',title:'Read concepts.md',dur:45},{type:'practice',title:'Install Docker & run hello-world',dur:30},{type:'read',title:'First 20 commands from cheatsheet',dur:20}]},
+    {day:'Tuesday',focus:'Basics — CLI Mastery',min:135,tasks:[{type:'read',title:'Complete commands_cheatsheet.md',dur:60},{type:'practice',title:'Drill run / ps / stop / rm / images',dur:45},{type:'build',title:'Build & run Dockerfile.hello',dur:30}]},
+    {day:'Wednesday',focus:'Images — Dockerfiles',min:135,tasks:[{type:'read',title:'dockerfile_guide.md full read',dur:60},{type:'build',title:'Build first custom image',dur:45},{type:'read',title:'image_layers.md — caching strategy',dur:30}]},
+    {day:'Thursday',focus:'Images — Optimization',min:90,tasks:[{type:'build',title:'Build Dockerfile.optimized',dur:60},{type:'practice',title:'Push image to Docker Hub',dur:30}]},
+    {day:'Friday',focus:'Docker Compose — Start',min:125,tasks:[{type:'read',title:'compose_guide.md full read',dur:60},{type:'practice',title:'docker compose up -d full stack',dur:45},{type:'read',title:'docker-compose.prod.yml analysis',dur:20}]},
+    {day:'Saturday',focus:'Week 1 Project',min:120,tasks:[{type:'build',title:'Add Redis service to compose',dur:45},{type:'practice',title:'Test --scale web=3',dur:30},{type:'practice',title:'Week 1 self-assessment & notes',dur:45}]},
+   ]},
+  {week:2,title:'Intermediate Week',theme:'Networking, persistent storage, and build optimisation',color:'#f59e0b',mods:['Networking','Storage & Volumes','Multi-Stage Builds'],
+   days:[
+    {day:'Monday',focus:'Container Networking',min:120,tasks:[{type:'read',title:'networking_guide.md full read',dur:60},{type:'practice',title:'Create custom bridge network',dur:30},{type:'practice',title:'Test DNS resolution between containers',dur:30}]},
+    {day:'Tuesday',focus:'Networking Deep Dive',min:75,tasks:[{type:'build',title:'Run networking compose example',dur:45},{type:'practice',title:'docker network inspect — full JSON analysis',dur:30}]},
+    {day:'Wednesday',focus:'Storage & Volumes',min:130,tasks:[{type:'read',title:'volumes_guide.md full read',dur:60},{type:'practice',title:'Named volume — create + mount + verify',dur:40},{type:'practice',title:'Bind mount — live sync test',dur:30}]},
+    {day:'Thursday',focus:'Storage Advanced',min:75,tasks:[{type:'build',title:'Run storage compose example',dur:45},{type:'practice',title:'Volume backup to .tar.gz',dur:30}]},
+    {day:'Friday',focus:'Multi-Stage Builds',min:110,tasks:[{type:'read',title:'multi_stage_guide.md full read',dur:45},{type:'build',title:'Build multi-stage Dockerfile',dur:45},{type:'practice',title:'Size comparison analysis',dur:20}]},
+    {day:'Saturday',focus:'Week 2 Project',min:90,tasks:[{type:'build',title:'Add test stage to Dockerfile',dur:60},{type:'practice',title:'Week 2 self-assessment',dur:30}]},
+   ]},
+  {week:3,title:'Advanced Week',theme:'Security hardening, orchestration, and CI/CD automation',color:'#ef4444',mods:['Container Security','Orchestration','CI/CD'],
+   days:[
+    {day:'Monday',focus:'Container Security',min:125,tasks:[{type:'read',title:'security_guide.md full read',dur:60},{type:'build',title:'Build Dockerfile.secure',dur:45},{type:'practice',title:'Verify non-root execution',dur:20}]},
+    {day:'Tuesday',focus:'Security — CVE Scanning',min:75,tasks:[{type:'practice',title:'Trivy image scan + triage',dur:45},{type:'practice',title:'Apply read-only root filesystem',dur:30}]},
+    {day:'Wednesday',focus:'Swarm Orchestration',min:150,tasks:[{type:'read',title:'swarm_guide.md full read',dur:60},{type:'practice',title:'docker swarm init',dur:45},{type:'build',title:'Deploy Swarm stack',dur:45}]},
+    {day:'Thursday',focus:'Kubernetes Migration',min:105,tasks:[{type:'read',title:'k8s_migration.md full read',dur:60},{type:'practice',title:'Scale + rolling update test',dur:45}]},
+    {day:'Friday',focus:'CI/CD Pipelines',min:135,tasks:[{type:'read',title:'cicd_guide.md + github_actions.yml',dur:45},{type:'read',title:'Analyse workflow YAML in detail',dur:30},{type:'build',title:'Implement GitHub Actions pipeline',dur:60}]},
+    {day:'Saturday',focus:'CI/CD & Week 3 Review',min:105,tasks:[{type:'read',title:'gitlab_ci.yml analysis',dur:30},{type:'practice',title:'Trigger + verify automated build',dur:45},{type:'practice',title:'Week 3 self-assessment',dur:30}]},
+   ]},
+  {week:4,title:'Production & Mastery',theme:'Production deployment, full observability, and Docker mastery',color:'#a855f7',mods:['Production','Monitoring','Best Practices'],
+   days:[
+    {day:'Monday',focus:'Production Deployment',min:150,tasks:[{type:'read',title:'production_guide.md full read',dur:60},{type:'build',title:'Deploy production compose stack',dur:60},{type:'build',title:'Add HEALTHCHECK to all images',dur:30}]},
+    {day:'Tuesday',focus:'Production Reliability',min:80,tasks:[{type:'practice',title:'Validate restart policies',dur:40},{type:'practice',title:'Set CPU + memory resource limits',dur:40}]},
+    {day:'Wednesday',focus:'Monitoring Stack',min:120,tasks:[{type:'read',title:'monitoring_guide.md full read',dur:60},{type:'build',title:'Deploy Prometheus + Grafana',dur:60}]},
+    {day:'Thursday',focus:'Observability Deep Dive',min:105,tasks:[{type:'practice',title:'Build Grafana dashboard with 5 panels',dur:60},{type:'build',title:'Configure Prometheus alert rules',dur:45}]},
+    {day:'Friday',focus:'Best Practices Mastery',min:120,tasks:[{type:'read',title:'best_practices.md — complete read',dur:60},{type:'practice',title:'Dockerfile audit with full checklist',dur:60}]},
+    {day:'Saturday',focus:'🎓 Graduation',min:150,tasks:[{type:'build',title:'Author personal Docker review checklist',dur:60},{type:'build',title:'Refactor a production stack end-to-end',dur:60},{type:'practice',title:'Final assessment & course completion',dur:30}]},
+   ]},
+];
+
+const ACHIEVEMENTS=[
+  {id:'enrolled',emoji:'📋',name:'Enrolled',desc:'Joined the Docker Learning Programme',fn:()=>true},
+  {id:'first_task',emoji:'✅',name:'First Step',desc:'Completed your first task',fn:d=>Object.keys(d.completedTasks||{}).length>=1},
+  {id:'mod1',emoji:'🐳',name:'Container Cadet',desc:'Module 01 — Basics complete',fn:d=>MODULES[0].tasks.every(t=>d.completedTasks?.[t.id])},
+  {id:'week1',emoji:'🟢',name:'Foundations Built',desc:'All Week 1 / Beginner modules complete',fn:d=>MODULES.filter(m=>m.week===1).flatMap(m=>m.tasks).every(t=>d.completedTasks?.[t.id])},
+  {id:'week2',emoji:'🟡',name:'Intermediate Certified',desc:'All Week 2 / Intermediate modules complete',fn:d=>MODULES.filter(m=>m.week===2).flatMap(m=>m.tasks).every(t=>d.completedTasks?.[t.id])},
+  {id:'week3',emoji:'🔴',name:'Advanced Practitioner',desc:'All Week 3 / Advanced modules complete',fn:d=>MODULES.filter(m=>m.week===3).flatMap(m=>m.tasks).every(t=>d.completedTasks?.[t.id])},
+  {id:'all_done',emoji:'🏆',name:'Docker Engineer',desc:'All 12 modules completed — course graduate',fn:d=>ALL_TASKS.every(t=>d.completedTasks?.[t.id])},
+  {id:'streak3',emoji:'🔥',name:'Consistent',desc:'3-day study streak maintained',fn:d=>(d.streak||0)>=3},
+  {id:'streak7',emoji:'⚡',name:'Dedicated',desc:'7-day study streak maintained',fn:d=>(d.streak||0)>=7},
+  {id:'streak14',emoji:'💪',name:'Committed',desc:'14-day study streak maintained',fn:d=>(d.streak||0)>=14},
+  {id:'xp500',emoji:'💎',name:'500 XP',desc:'Accumulated 500 learning score points',fn:d=>(d.totalXp||0)>=500},
+  {id:'time5h',emoji:'⏰',name:'5 Hours Logged',desc:'Logged 5+ hours of study time',fn:d=>Object.values(d.timeSpent||{}).reduce((a,b)=>a+(b||0),0)>=18000},
+  {id:'notes3',emoji:'📝',name:'Documenter',desc:'Notes recorded in 3+ modules',fn:d=>Object.values(d.moduleNotes||{}).filter(n=>n&&n.length>20).length>=3},
+  {id:'all_xp',emoji:'🌟',name:'Perfect Score',desc:'Earned 100% of all available XP',fn:d=>(d.totalXp||0)>=MAX_XP},
+];
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════ */
+function h32(s){let h=5381;for(let i=0;i<s.length;i++)h=Math.imul(h,33)^s.charCodeAt(i);return(h>>>0).toString(16);}
+function studentId(u){let h=0;for(let c of u)h=(h*31+c.charCodeAt(0))&0xFFFFFF;return'STU-'+h.toString(16).toUpperCase().padStart(6,'0');}
+function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtSec(s){if(!s||s<=0)return'0m';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return h>0?h+'h '+m+'m':m>0?m+'m '+sec+'s':sec+'s';}
+function fmtHrs(s){if(!s||s<=0)return'0.0';return(s/3600).toFixed(1);}
+
+function getModStatus(mod,ct){
+  const prev=MODULES.find(m=>m.num===mod.num-1);
+  const prevOk=!prev||prev.tasks.every(t=>ct?.[t.id]);
+  const done=mod.tasks.filter(t=>ct?.[t.id]).length;
+  if(!prevOk&&mod.num>1)return'locked';
+  if(done===0)return'not_started';
+  if(done<mod.tasks.length)return'in_progress';
+  return'complete';
+}
+
+function getPace(data,session){
+  const enrolledAt=data.enrolledAt||session.at;
+  const daysElapsed=Math.floor((Date.now()-new Date(enrolledAt).getTime())/86400000);
+  const goalWeeks=data.studyGoal||4;
+  const totalDays=goalWeeks*7;
+  const timePct=totalDays>0?Math.min(daysElapsed/totalDays,1):0;
+  const tasksDone=Object.keys(data.completedTasks||{}).length;
+  const contentPct=tasksDone/TOTAL_TASKS;
+  const ratio=timePct>0.01?contentPct/timePct:(contentPct>0?2:1);
+  const expectedDone=Math.round(timePct*TOTAL_TASKS);
+  const gap=Math.max(0,expectedDone-tasksDone);
+  const completionDate=new Date(new Date(enrolledAt).getTime()+totalDays*86400000);
+  let status,color,label,icon;
+  if(ratio>=1.15){status='ahead';color='#22c55e';label='Ahead of Schedule';icon='↑';}
+  else if(ratio>=0.88){status='on_track';color='#38bdf8';label='On Track';icon='→';}
+  else if(ratio>=0.65){status='slightly_behind';color='#f59e0b';label='Slightly Behind';icon='↓';}
+  else{status='behind';color='#ef4444';label='Behind Schedule';icon='↓↓';}
+  return{status,color,label,icon,daysElapsed,totalDays,goalWeeks,timePct,contentPct,ratio,expectedDone,gap,completionDate,tasksDone};
+}
+
+/* Auth storage */
+const getUsers=()=>{try{return JSON.parse(localStorage.getItem('dlms_users')||'[]')}catch{return[]}};
+const saveUsers=u=>localStorage.setItem('dlms_users',JSON.stringify(u));
+const getSession=()=>{try{return JSON.parse(localStorage.getItem('dlms_session')||'null')}catch{return null}};
+const saveSession=s=>localStorage.setItem('dlms_session',JSON.stringify(s));
+const clearSession=()=>localStorage.removeItem('dlms_session');
+const initData=()=>({completedTasks:{},moduleNotes:{},timeSpent:{},activityLog:[],streak:0,lastActivityDate:null,totalXp:0,enrolledAt:null,studyGoal:4});
+const loadData=u=>{try{return JSON.parse(localStorage.getItem('dlms_data_'+u)||'null')||initData()}catch{return initData()}};
+const saveData=(u,d)=>localStorage.setItem('dlms_data_'+u,JSON.stringify(d));
+
+/* ═══════════════════════════════════════════════
+   HOOKS
+═══════════════════════════════════════════════ */
+function useUserData(username){
+  const[data,setRaw]=useState(()=>username?loadData(username):initData());
+  useEffect(()=>{setRaw(username?loadData(username):initData());},[username]);
+  const setData=useCallback(fn=>{setRaw(prev=>{const next=typeof fn==='function'?fn(prev):fn;if(username)saveData(username,next);return next;});},[username]);
+  return[data,setData];
+}
+
+/* ═══════════════════════════════════════════════
+   SMALL COMPONENTS
+═══════════════════════════════════════════════ */
+function Ring({pct,size=130,sw=11,color='#38bdf8'}){
+  const r=(size-sw)/2,c=r*2*Math.PI,off=c-(Math.min(pct,100)/100)*c;
+  return html`<svg width=${size} height=${size} style=${{transform:'rotate(-90deg)',display:'block'}}>
+    <circle cx=${size/2} cy=${size/2} r=${r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth=${sw}/>
+    <circle cx=${size/2} cy=${size/2} r=${r} fill="none" stroke=${color} strokeWidth=${sw}
+      strokeDasharray=${c} strokeDashoffset=${off} strokeLinecap="round" className="ring-ani"/>
+  </svg>`;
+}
+
+function Check(){return html`<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>`;}
+
+const TC={read:{c:'#3b82f6',bg:'rgba(59,130,246,0.12)',l:'READ'},practice:{c:'#22c55e',bg:'rgba(34,197,94,0.12)',l:'PRACTICE'},build:{c:'#f97316',bg:'rgba(249,115,22,0.12)',l:'BUILD'}};
+function TypeBadge({type}){
+  const s=TC[type]||{c:'#94a3b8',bg:'rgba(148,163,184,0.1)',l:'OTHER'};
+  return html`<span style=${{color:s.c,background:s.bg,fontSize:9.5,fontWeight:700,padding:'2px 7px',borderRadius:3,letterSpacing:'0.07em'}}>${s.l}</span>`;
+}
+
+function StatusBadge({status}){
+  const M={locked:{bg:'rgba(30,41,59,0.8)',c:'#475569',t:'🔒 LOCKED'},not_started:{bg:'rgba(255,255,255,0.05)',c:'#64748b',t:'NOT STARTED'},in_progress:{bg:'rgba(59,130,246,0.12)',c:'#60a5fa',t:'IN PROGRESS'},complete:{bg:'rgba(34,197,94,0.12)',c:'#4ade80',t:'✓ COMPLETE'}};
+  const s=M[status]||M.not_started;
+  return html`<span style=${{background:s.bg,color:s.c,fontSize:9.5,fontWeight:700,padding:'2px 8px',borderRadius:3,letterSpacing:'0.08em',border:'1px solid '+s.c+'30',whiteSpace:'nowrap'}}>${s.t}</span>`;
+}
+
+function ProgBar({pct,color='#38bdf8',h=4}){
+  return html`<div style=${{height:h,background:'rgba(255,255,255,0.07)',borderRadius:2,overflow:'hidden'}}>
+    <div style=${{height:'100%',width:Math.min(pct,100)+'%',background:color,borderRadius:2,transition:'width 0.6s ease'}}/>
+  </div>`;
+}
+
+function Toast({message,type,onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,2800);return()=>clearTimeout(t);},[onDone]);
+  return html`<div className=${cx('toast-ani fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3 rounded-lg text-sm font-medium shadow-2xl backdrop-blur-xl border',
+    type==='success'?'bg-[#0a1020]/95 border-sky-500/40 text-sky-200':'bg-[#0a1020]/95 border-red-500/40 text-red-300')}>
+    ${type==='success'?'✓':'✗'} ${message}
+  </div>`;
+}
+
+function Divider(){return html`<div className="h-px bg-white/[0.06] my-5"/>`;}
+
+/* ═══════════════════════════════════════════════
+   AUTH SCREEN
+═══════════════════════════════════════════════ */
+function AuthScreen({onAuth}){
+  const[tab,setTab]=useState('login');
+  const[u,setU]=useState('');const[fn,setFn]=useState('');
+  const[p,setP]=useState('');const[cp,setCp]=useState('');
+  const[goal,setGoal]=useState(4);
+  const[err,setErr]=useState('');const[ok,setOk]=useState('');
+
+  const login=e=>{
+    e.preventDefault();setErr('');setOk('');
+    if(!u.trim()||!p){setErr('Username and password are required.');return;}
+    const users=getUsers();const user=users.find(x=>x.username.toLowerCase()===u.trim().toLowerCase());
+    if(!user){setErr('Account not found. Please register first.');return;}
+    if(user.ph!==h32(p)){setErr('Incorrect password. Please try again.');return;}
+    const sess={userId:user.id,username:user.username,fullName:user.fullName||user.username,studyGoal:user.studyGoal||4,at:new Date().toISOString()};
+    saveSession(sess);onAuth(sess);
+  };
+  const register=e=>{
+    e.preventDefault();setErr('');setOk('');
+    if(!u.trim()||u.trim().length<3){setErr('Username must be at least 3 characters.');return;}
+    if(!fn.trim()||fn.trim().length<2){setErr('Please enter your full name.');return;}
+    if(!p||p.length<4){setErr('Password must be at least 4 characters.');return;}
+    if(p!==cp){setErr('Passwords do not match.');return;}
+    const users=getUsers();
+    if(users.some(x=>x.username.toLowerCase()===u.trim().toLowerCase())){setErr('Username already taken.');return;}
+    saveUsers([...users,{id:'u'+Date.now(),username:u.trim(),fullName:fn.trim(),studyGoal:goal,ph:h32(p),at:new Date().toISOString()}]);
+    setOk('Account created successfully. Please sign in.');setTab('login');setP('');setCp('');
+  };
+  const sw=t=>{setTab(t);setErr('');setOk('');};
+  const inp='w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.09] rounded-lg text-slate-200 text-sm outline-none transition-all focus:border-sky-500/70 focus:bg-sky-500/5 placeholder:text-slate-600';
+
+  return html`<div className="min-h-screen flex items-center justify-center bg-[#060b16] relative overflow-hidden">
+    <div style=${{position:'absolute',top:'-10%',left:'-8%',width:'40%',height:'40%',background:'radial-gradient(ellipse,rgba(56,189,248,0.06),transparent 70%)',pointerEvents:'none'}}/>
+    <div style=${{position:'absolute',bottom:'-10%',right:'-5%',width:'35%',height:'40%',background:'radial-gradient(ellipse,rgba(129,140,248,0.07),transparent 70%)',pointerEvents:'none'}}/>
+    <div className="au relative z-10 w-[420px] max-w-[95vw]">
+      <div className="text-center mb-8">
+        <div className="text-4xl mb-3" style=${{filter:'drop-shadow(0 0 12px rgba(56,189,248,0.4))'}}>🐳</div>
+        <div className="text-lg font-black grad-text tracking-tight">Docker Student Portal</div>
+        <div className="text-xs text-slate-600 mt-1 uppercase tracking-widest">Learning Management System</div>
+      </div>
+      <div className="bg-[#0a1020]/80 backdrop-blur-2xl border border-white/[0.08] rounded-xl overflow-hidden shadow-2xl" style=${{boxShadow:'0 20px 60px rgba(0,0,0,0.6)'}}>
+        <div className="flex border-b border-white/[0.06]">
+          ${['login','register'].map(t=>html`
+            <button key=${t} onClick=${()=>sw(t)}
+              className=${cx('flex-1 py-3 text-xs font-bold uppercase tracking-widest cursor-pointer border-none transition-all',
+                tab===t?'bg-sky-500/10 text-sky-400 border-b-2 border-sky-500':'bg-transparent text-slate-500 hover:text-slate-300')}>
+              ${t==='login'?'Sign In':'Register'}
+            </button>`)}
+        </div>
+        <div className="p-7">
+          ${err&&html`<div className="bg-red-500/10 border border-red-500/25 rounded-lg px-4 py-2.5 text-xs text-red-300 mb-4 font-medium">${err}</div>`}
+          ${ok&&html`<div className="bg-green-500/10 border border-green-500/25 rounded-lg px-4 py-2.5 text-xs text-green-300 mb-4 font-medium">${ok}</div>`}
+          ${tab==='login'?html`
+            <form onSubmit=${login}>
+              <h1 className="text-lg font-black mb-0.5">Welcome back</h1>
+              <p className="text-slate-500 text-xs mb-5">Sign in to continue your learning progress</p>
+              <div className="mb-3"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username</label>
+                <input className=${inp} placeholder="your_username" value=${u} onInput=${e=>setU(e.target.value)} autoFocus/></div>
+              <div className="mb-5"><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+                <input className=${inp} type="password" placeholder="••••••••" value=${p} onInput=${e=>setP(e.target.value)}/></div>
+              <button type="submit" className="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm rounded-lg border-none cursor-pointer transition-all">Sign In →</button>
+            </form>`
+          :html`
+            <form onSubmit=${register}>
+              <h1 className="text-lg font-black mb-0.5">Create account</h1>
+              <p className="text-slate-500 text-xs mb-5">Register to track your Docker learning journey</p>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Username</label>
+                  <input className=${inp} placeholder="username" value=${u} onInput=${e=>setU(e.target.value)} autoFocus/></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+                  <input className=${inp} placeholder="Jane Smith" value=${fn} onInput=${e=>setFn(e.target.value)}/></div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+                  <input className=${inp} type="password" placeholder="min. 4 chars" value=${p} onInput=${e=>setP(e.target.value)}/></div>
+                <div><label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Confirm</label>
+                  <input className=${inp} type="password" placeholder="repeat" value=${cp} onInput=${e=>setCp(e.target.value)}/></div>
+              </div>
+              <div className="mb-5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Study Goal</label>
+                <select className=${inp+' cursor-pointer'} value=${goal} onChange=${e=>setGoal(parseInt(e.target.value))} style=${{background:'rgba(255,255,255,0.04)'}}>
+                  <option value=${4}>4 weeks (intensive — 10+ hrs/week)</option>
+                  <option value=${6}>6 weeks (regular — 7 hrs/week)</option>
+                  <option value=${8}>8 weeks (steady — 5 hrs/week)</option>
+                  <option value=${12}>12 weeks (casual — 3 hrs/week)</option>
+                </select>
+              </div>
+              <button type="submit" className="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm rounded-lg border-none cursor-pointer transition-all">Create Account →</button>
+            </form>`}
+        </div>
+      </div>
+      <p className="text-center mt-4 text-xs text-slate-700">🔒 All data stored locally in your browser · No server · No tracking</p>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   NAVBAR (Replaced Sidebar)
+═══════════════════════════════════════════════ */
+function Navbar({view,setView,session,data,totalXp,onLogout}){
+  const nav=[
+    {id:'modules',icon:'📖',label:'Articles'},
+    {id:'dashboard',icon:'📊',label:'Progress'},
+    {id:'practice',icon:'⚡',label:'Tasks'},
+  ];
+  return html`<nav className="h-14 bg-[#0a1020]/95 backdrop-blur-md border-b border-white/[0.06] flex flex-shrink-0 items-center justify-between px-6 relative z-40">
+    <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2.5 cursor-pointer" onClick=${()=>setView('modules')}>
+        <span style=${{fontSize:20,filter:'drop-shadow(0 0 8px rgba(56,189,248,0.4))'}}>🐳</span>
+        <div className="text-sm font-black grad-text tracking-tight">Docker Blog</div>
+      </div>
+      <div className="flex items-center gap-1">
+        ${nav.map(n=>html`
+          <button key=${n.id} onClick=${()=>setView(n.id)}
+            className=${cx('flex items-center gap-1.5 px-3 py-1.5 rounded-full cursor-pointer text-xs font-semibold transition-all border-none',
+              view===n.id||view==='module-detail'&&n.id==='modules'?'bg-sky-500/10 text-sky-400':'bg-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.05]')}>
+            <span>${n.icon}</span> ${n.label}
+          </button>
+        `)}
+      </div>
+    </div>
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.06] rounded-full px-3 py-1">
+        <div className="text-[10px] text-slate-400">XP <span className="font-bold text-sky-400">${totalXp}</span></div>
+      </div>
+      <button onClick=${onLogout} className="text-[10px] text-slate-500 hover:text-red-400 cursor-pointer bg-transparent border-none font-bold uppercase tracking-widest transition-colors">Sign Out</button>
+    </div>
+  </nav>`;
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════ */
+function Dashboard({data,session,goModules,setView}){
+  const ct=data.completedTasks||{};
+  const done=Object.keys(ct).length;
+  const pct=Math.round((done/TOTAL_TASKS)*100);
+  const xp=ALL_TASKS.filter(t=>ct[t.id]).reduce((s,t)=>s+t.xp,0);
+  const modsDone=MODULES.filter(m=>m.tasks.every(t=>ct[t.id])).length;
+  const totalSecs=Object.values(data.timeSpent||{}).reduce((a,b)=>a+(b||0),0);
+  const pace=getPace(data,session);
+
+  const currentMod=MODULES.find(m=>{
+    const st=getModStatus(m,ct);
+    return st==='in_progress'||st==='not_started';
+  });
+
+  const last7=useMemo(()=>{
+    const r=[];
+    for(let i=6;i>=0;i--){
+      const d=new Date(Date.now()-i*86400000);
+      const ds=d.toDateString();
+      const count=(data.activityLog||[]).filter(e=>new Date(e.date).toDateString()===ds).length;
+      r.push({label:['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()],count,today:i===0,date:d});
+    }
+    return r;
+  },[data.activityLog]);
+  const maxBar=Math.max(...last7.map(d=>d.count),1);
+
+  const recent=(data.activityLog||[]).slice(-5).reverse();
+
+  return html`<div className="ai h-full overflow-y-auto">
+    <div className="px-7 pt-6 pb-0 mb-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h1 className="text-xl font-black mb-0.5">Student Dashboard</h1>
+          <p className="text-slate-500 text-xs">Welcome back, <span className="text-slate-300 font-semibold">${session.fullName||session.username}</span> · ${studentId(session.username)}</p>
+        </div>
+        <div class="text-right">
+          <div className="text-[10px] text-slate-600 uppercase tracking-wider mb-0.5">Enrolled</div>
+          <div className="text-xs font-mono text-slate-400">${fmtDate(data.enrolledAt||session.at)}</div>
+        </div>
+      </div>
+
+      <!-- Pace Banner -->
+      <div className="rounded-xl border p-4 mb-5 flex items-center gap-4" style=${{borderColor:pace.color+'30',background:pace.color+'08'}}>
+        <div className="text-2xl font-black" style=${{color:pace.color}}>${pace.icon}</div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-sm font-black" style=${{color:pace.color}}>${pace.label}</span>
+            ${pace.gap>0&&html`<span className="text-[10px] font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded">${pace.gap} tasks behind</span>`}
+          </div>
+          <div className="text-xs text-slate-500">Day <span className="text-slate-300 font-semibold">${pace.daysElapsed}</span> of <span className="text-slate-300 font-semibold">${pace.totalDays}</span> · Goal: ${pace.goalWeeks} weeks · Expected completion: <span className="text-slate-300 font-semibold">${fmtDate(pace.completionDate.toISOString())}</span></div>
+          <div className="mt-2">
+            <div className="flex justify-between text-[10px] mb-1">
+              <span className="text-slate-600">Time elapsed</span><span className="text-slate-600">Content progress</span>
+            </div>
+            <div style=${{height:6,background:'rgba(255,255,255,0.07)',borderRadius:3,overflow:'hidden',position:'relative'}}>
+              <div style=${{height:'100%',width:Math.round(pace.timePct*100)+'%',background:'rgba(255,255,255,0.15)',borderRadius:3,position:'absolute'}}/>
+              <div style=${{height:'100%',width:Math.round(pace.contentPct*100)+'%',background:pace.color,borderRadius:3,position:'absolute',transition:'width 0.6s ease'}}/>
+            </div>
+            <div className="flex justify-between text-[10px] mt-1 text-slate-600">
+              <span>Timeline: ${Math.round(pace.timePct*100)}%</span><span>Completed: ${Math.round(pace.contentPct*100)}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="px-7 pb-7">
+      <!-- Stats Row -->
+      <div className="grid grid-cols-5 gap-3 mb-5">
+        ${[
+          {l:'Modules',v:modsDone,s:'/12',c:'#38bdf8'},
+          {l:'Tasks',v:done,s:'/'+TOTAL_TASKS,c:'#22c55e'},
+          {l:'XP Score',v:xp,s:'',c:'#f59e0b'},
+          {l:'Study Time',v:fmtHrs(totalSecs)+'h',s:'',c:'#a855f7'},
+          {l:'Day Streak',v:data.streak||0,s:'',c:'#f97316'},
+        ].map((s,i)=>html`
+          <div key=${i} className="bg-white/[0.03] border border-white/[0.07] rounded-xl p-3.5 relative overflow-hidden">
+            <div style=${{position:'absolute',top:0,left:0,right:0,height:1.5,background:s.c}}/>
+            <div className="text-[10px] text-slate-600 uppercase tracking-wider mb-1">${s.l}</div>
+            <div className="text-xl font-black" style=${{color:s.c}}>${s.v}<span className="text-xs font-normal text-slate-600">${s.s}</span></div>
+          </div>`)}
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <!-- Module Status Table -->
+        <div className="col-span-2 bg-white/[0.025] border border-white/[0.07] rounded-xl overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
+            <div className="text-xs font-bold">Module Status Overview</div>
+            <button onClick=${goModules} className="text-[10px] text-sky-400 font-semibold bg-transparent border-none cursor-pointer hover:underline">Open Modules →</button>
+          </div>
+          <div className="overflow-y-auto" style=${{maxHeight:280}}>
+            ${MODULES.map(mod=>{
+              const st=getModStatus(mod,ct);
+              const d=mod.tasks.filter(t=>ct[t.id]).length;
+              const p=Math.round((d/mod.tasks.length)*100);
+              return html`<div key=${mod.id} onClick=${()=>st!=='locked'&&goModules(mod)}
+                className=${cx('flex items-center gap-3 px-5 py-2.5 border-b border-white/[0.04] transition-all',
+                  st==='locked'?'opacity-40 cursor-not-allowed':'cursor-pointer hover:bg-white/[0.03]')}>
+                <span style=${{fontSize:14,opacity:st==='locked'?0.4:1}}>${mod.emoji}</span>
+                <span className="text-xs font-mono text-slate-600 w-5">0${mod.num>9?'':' '}${mod.num}</span>
+                <span className="text-xs font-medium flex-1 truncate">${mod.title}</span>
+                <div style=${{width:80,height:3,background:'rgba(255,255,255,0.06)',borderRadius:2,overflow:'hidden'}}>
+                  <div style=${{height:'100%',width:p+'%',background:mod.accent,borderRadius:2}}/>
+                </div>
+                <span className="text-[10px] font-mono text-slate-600 w-8 text-right">${d}/${mod.tasks.length}</span>
+                <${StatusBadge} status=${st}/>
+              </div>`;
+            })}
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div className="flex flex-col gap-4">
+          <!-- Progress Ring -->
+          <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-4 flex flex-col items-center">
+            <div className="text-xs font-bold mb-3 self-start">Overall Progress</div>
+            <div className="relative flex items-center justify-center">
+              <${Ring} pct=${pct} size=${120} sw=${10}/>
+              <div className="absolute text-center">
+                <div className="text-2xl font-black text-sky-400 leading-none">${pct}%</div>
+                <div className="text-[10px] text-slate-600 mt-0.5">${done}/${TOTAL_TASKS}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity Chart -->
+          <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-4 flex-1">
+            <div className="text-xs font-bold mb-3">Daily Activity</div>
+            <svg width="100%" height="80" viewBox="0 0 196 80" preserveAspectRatio="none">
+              ${last7.map((d,i)=>{
+                const bh=d.count>0?Math.max((d.count/maxBar)*52,6):0;
+                const x=i*28+2,y=60-bh;
+                return html`<g key=${i}>
+                  <rect x=${x} y=${2} width=${24} height=${58} rx=${3} fill="rgba(255,255,255,0.03)"/>
+                  ${bh>0&&html`<rect x=${x} y=${y} width=${24} height=${bh} rx=${3} fill=${d.today?'#38bdf8':'rgba(56,189,248,0.3)'}/>`}
+                  <text x=${x+12} y=${74} textAnchor="middle" fill=${d.today?'#38bdf8':'#334155'} fontSize=${8.5}>${d.label}</text>
+                  ${d.count>0&&html`<text x=${x+12} y=${y-3} textAnchor="middle" fill="#475569" fontSize=${8}>${d.count}</text>`}
+                </g>`;
+              })}
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row -->
+      <div className="grid grid-cols-2 gap-4">
+        <!-- Current Module -->
+        <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-5">
+          <div className="text-xs font-bold mb-3 text-slate-400 uppercase tracking-wider">Current Module</div>
+          ${currentMod?html`
+            <div className="flex items-start gap-3">
+              <span style=${{fontSize:28}}>${currentMod.emoji}</span>
+              <div className="flex-1">
+                <div className="text-sm font-bold mb-1">${currentMod.title}</div>
+                <div className="text-xs text-slate-500 mb-2">${currentMod.desc}</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <${ProgBar} pct=${Math.round((currentMod.tasks.filter(t=>ct[t.id]).length/currentMod.tasks.length)*100)} color=${currentMod.accent}/>
+                  <span className="text-xs text-slate-600">${currentMod.tasks.filter(t=>ct[t.id]).length}/${currentMod.tasks.length}</span>
+                </div>
+                <button onClick=${()=>goModules(currentMod)}
+                  className="text-[10px] font-bold text-sky-400 bg-sky-500/10 border border-sky-500/20 px-3 py-1.5 rounded cursor-pointer hover:bg-sky-500/20 transition-all border-none">
+                  Continue Module →
+                </button>
+              </div>
+            </div>`
+          :html`<div className="text-green-400 text-sm font-bold">🎓 All modules complete — Congratulations!</div>`}
+        </div>
+
+        <!-- Recent Activity -->
+        <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-5">
+          <div className="text-xs font-bold mb-3 text-slate-400 uppercase tracking-wider">Recent Activity</div>
+          ${recent.length===0?html`<p className="text-slate-700 text-xs py-2">No activity recorded yet. Complete your first task to begin!</p>`
+          :recent.map((e,i)=>{
+            const mod=MODULES.find(m=>m.id===e.moduleId);
+            return html`<div key=${i} className="flex items-center gap-2.5 py-2 border-b border-white/[0.04] last:border-0">
+              <div style=${{width:6,height:6,borderRadius:'50%',background:mod?.accent||'#38bdf8',flexShrink:0}}/>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium truncate">${e.taskTitle}</div>
+                <div className="text-[10px] text-slate-600">${mod?.title}</div>
+              </div>
+              <span className="text-[10px] font-bold text-amber-400 flex-shrink-0">+${e.xp} XP</span>
+            </div>`;
+          })}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   MODULES LIST (Grid Feed)
+═══════════════════════════════════════════════ */
+function ModulesList({data,onSelect,initialMod}){
+  const ct=data.completedTasks||{};
+  useEffect(()=>{if(initialMod)onSelect(initialMod);},[]);
+
+  return html`<div className="ai py-8 px-6 w-full max-w-[1600px] mx-auto">
+    <div className="mb-8">
+      <h1 className="text-3xl font-black mb-2 tracking-tight">Docker Articles</h1>
+      <p className="text-slate-500 text-sm">Read sequentially to build your Docker expertise from the ground up.</p>
+    </div>
+    
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      ${MODULES.map((mod,i)=>{
+        const st=getModStatus(mod,ct);
+        const done=mod.tasks.filter(t=>ct[t.id]).length;
+        const p=Math.round((done/mod.tasks.length)*100);
+        const locked=st==='locked';
+        
+        return html`<article key=${mod.id}
+          className=${cx('group bg-[#0a1020] border rounded-2xl p-6 relative transition-all duration-300 flex flex-col',
+            locked?'opacity-50 border-white/[0.03] cursor-not-allowed grayscale':'cursor-pointer border-white/[0.08] hover:border-white/[0.15] hover:-translate-y-1 hover:shadow-2xl shadow-lg')}
+          onClick=${()=>!locked&&onSelect(mod)}>
+          
+          <div className="flex flex-col h-full">
+            <div className="flex items-start justify-between mb-4">
+              <span style=${{fontSize:36,opacity:locked?0.3:1}} className="drop-shadow-lg">${mod.emoji}</span>
+              ${locked?html`<span className="text-[9px] font-bold text-slate-500 px-2 py-0.5 rounded border border-slate-700 bg-slate-800/50">🔒 LOCKED</span>`
+               :html`<${StatusBadge} status=${st}/>`}
+            </div>
+            
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-sky-400">Chapter ${String(mod.num).padStart(2,'0')}</span>
+            </div>
+            
+            <h2 className=${cx('text-lg font-black mb-2 tracking-tight leading-snug',locked?'text-slate-500':'text-slate-100 group-hover:text-sky-300 transition-colors')}>${mod.title}</h2>
+            <p className="text-xs text-slate-400 leading-relaxed mb-6 flex-1">${mod.desc}</p>
+            
+            ${!locked&&html`
+              <div className="flex items-center justify-between gap-2 text-[10px] font-medium text-slate-500 border-t border-white/[0.05] pt-4 mt-auto">
+                <span className="flex items-center gap-1">⏱️ ~${mod.hours}h</span>
+                ${p===100?html`<span className="text-green-400 text-right">✓ Done</span>`
+                  :html`<span className="text-right"><span className="text-sky-400">${done}/${mod.tasks.length}</span> tasks</span>`}
+              </div>
+            `}
+            
+            ${locked&&html`
+              <div className="mt-auto pt-4 border-t border-white/[0.05] text-[10px] text-amber-600/80 font-medium">
+                Requires: Chapter ${String(mod.num-1).padStart(2,'0')}
+              </div>
+            `}
+          </div>
+        </article>`;
+      })}
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   MODULE DETAIL (with auto-timer)
+═══════════════════════════════════════════════ */
+function ModuleDetail({mod,data,setData,onBack,toast,onViewFile}){
+  const startTs=useRef(Date.now());
+  const[sessElapsed,setSessElapsed]=useState(0);
+  const savedTime=data.timeSpent?.[mod.id]||0;
+  const[note,setNote]=useState(data.moduleNotes?.[mod.id]||'');
+  const autoSaveRef=useRef(null);
+
+  useEffect(()=>{
+    setNote(data.moduleNotes?.[mod.id]||'');
+    startTs.current=Date.now();
+    const tick=setInterval(()=>setSessElapsed(Math.floor((Date.now()-startTs.current)/1000)),1000);
+    autoSaveRef.current=setInterval(()=>{
+      const sec=Math.floor((Date.now()-startTs.current)/1000);
+      if(sec>0){
+        setData(prev=>({...prev,timeSpent:{...prev.timeSpent,[mod.id]:(prev.timeSpent?.[mod.id]||0)+sec}}));
+        startTs.current=Date.now();
+      }
+    },30000);
+    return()=>{
+      clearInterval(tick);clearInterval(autoSaveRef.current);
+      const sec=Math.floor((Date.now()-startTs.current)/1000);
+      if(sec>0)setData(prev=>({...prev,timeSpent:{...prev.timeSpent,[mod.id]:(prev.timeSpent?.[mod.id]||0)+sec}}));
+    };
+  },[mod.id]);
+
+  const toggleTask=task=>{
+    const was=!!data.completedTasks?.[task.id];
+    setData(prev=>{
+      const ct={...prev.completedTasks},log=[...(prev.activityLog||[])];
+      let xp=prev.totalXp||0,streak=prev.streak||0;
+      const today=new Date().toDateString();
+      if(!was){
+        ct[task.id]={at:new Date().toISOString()};xp+=task.xp;
+        const last=prev.lastActivityDate;
+        if(last!==today&&last===new Date(Date.now()-86400000).toDateString())streak+=1;
+        else if(last!==today)streak=1;
+        log.push({date:new Date().toISOString(),taskId:task.id,taskTitle:task.title,moduleId:mod.id,xp:task.xp});
+      }else{
+        delete ct[task.id];xp=Math.max(0,xp-task.xp);
+        const idx=log.map(e=>e.taskId).lastIndexOf(task.id);
+        if(idx!==-1)log.splice(idx,1);
+      }
+      return{...prev,completedTasks:ct,activityLog:log,totalXp:xp,streak,lastActivityDate:!was?today:prev.lastActivityDate};
+    });
+    if(!was)toast('+'+task.xp+' XP earned','success');
+  };
+
+  const saveNote=useCallback(()=>{setData(prev=>({...prev,moduleNotes:{...prev.moduleNotes,[mod.id]:note}}));toast('Notes saved','success');},[note,mod.id]);
+
+  const done=mod.tasks.filter(t=>data.completedTasks?.[t.id]).length;
+  const totalXp=mod.tasks.reduce((s,t)=>s+t.xp,0);
+  const totalSecs=savedTime+sessElapsed;
+  const st=getModStatus(mod,data.completedTasks||{});
+
+  return html`<div className="ai pb-12 max-w-4xl mx-auto px-6">
+    <header className="mb-10 text-center pt-8 relative">
+      <button onClick=${onBack} className="absolute left-0 top-2 text-[10px] font-semibold text-slate-500 hover:text-sky-400 bg-transparent border border-white/[0.05] hover:bg-white/[0.05] px-3 py-1.5 rounded-full cursor-pointer transition-all">← Back</button>
+      <div className="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-3">Module ${String(mod.num).padStart(2,'0')}</div>
+      <h1 className="text-3xl font-black mb-4">${mod.title}</h1>
+      <p className="text-slate-400 text-sm leading-relaxed">${mod.desc}</p>
+      <div className="flex items-center justify-center gap-4 mt-6 text-xs font-semibold text-slate-500">
+        <span className="flex items-center gap-1.5">⏱️ ~${mod.hours}h recommended</span>
+        <span className="flex items-center gap-1.5">🎯 ${totalXp} XP available</span>
+        <${StatusBadge} status=${st}/>
+      </div>
+    </header>
+
+    <article className="prose prose-invert prose-sky max-w-none mb-16 bg-[#0a1020] border border-white/[0.05] rounded-2xl p-8 shadow-2xl">
+      ${mod.files.map(f=>html`
+        <div key=${f} className="mb-12 last:mb-0">
+          <div dangerouslySetInnerHTML=${{__html: window.marked ? marked.parse(window.COURSE_CONTENT?.[mod.id+'/'+f] || '') : ''}} />
+        </div>
+      `)}
+    </article>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="bg-[#0a1020] border border-white/[0.05] rounded-xl p-6 shadow-xl">
+        <h3 className="text-sm font-bold mb-4 flex items-center justify-between">
+          <span>Action Items</span>
+          <span className="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-2 py-1 rounded">${done}/${mod.tasks.length} Completed</span>
+        </h3>
+        <div className="space-y-2">
+          ${mod.tasks.map((task,ti)=>{
+            const isDone=!!data.completedTasks?.[task.id];
+            return html`<div key=${task.id} className="flex items-start gap-3 p-3 border border-white/[0.04] rounded-lg transition-all hover:bg-white/[0.02]">
+              <div onClick=${()=>toggleTask(task)} className=${cx('mt-0.5 w-4 h-4 rounded cursor-pointer flex items-center justify-center transition-all border',isDone?'bg-sky-500 border-sky-500':'bg-transparent border-white/20 hover:border-sky-400')}>
+                ${isDone&&html`<${Check}/>`}
+              </div>
+              <div className="flex-1">
+                <div className=${cx('text-sm font-medium mb-1',isDone?'line-through text-slate-600':'text-slate-200')}>${task.title}</div>
+                <div className="text-xs text-slate-500 leading-relaxed">${task.desc}</div>
+              </div>
+              <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded">+${task.xp}</span>
+            </div>`;
+          })}
+        </div>
+      </div>
+      
+      <div className="bg-[#0a1020] border border-white/[0.05] rounded-xl p-6 shadow-xl flex flex-col">
+        <h3 className="text-sm font-bold mb-4 flex items-center justify-between">
+          <span>Study Session Notes</span>
+          <span className="text-[10px] text-slate-500 font-mono">⏱️ ${fmtSec(totalSecs)}</span>
+        </h3>
+        <textarea rows=${8} value=${note} onInput=${e=>setNote(e.target.value)} onBlur=${saveNote} className="w-full flex-1 bg-white/[0.03] border border-white/[0.05] rounded-lg p-4 text-xs font-mono text-slate-300 outline-none focus:border-sky-500/50 resize-none placeholder:text-slate-700" placeholder="Jot down notes while reading..." />
+        <div className="text-[9px] text-slate-600 mt-3 flex justify-between">
+          <span>Saves automatically.</span>
+          <span>Time is tracked automatically.</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   PRACTICE PLAN
+═══════════════════════════════════════════════ */
+function PracticePlan(){
+  const[wk,setWk]=useState(1);
+  const week=PLAN.find(w=>w.week===wk);
+  const tc={read:'#3b82f6',practice:'#22c55e',build:'#f97316'};
+  const totalMin=week.days.reduce((s,d)=>s+d.tasks.reduce((a,t)=>a+t.dur,0),0);
+
+  return html`<div className="ai h-full overflow-y-auto">
+    <div className="px-7 pt-6 pb-0 mb-5">
+      <h1 className="text-xl font-black mb-0.5">📋 4-Week Practice Plan</h1>
+      <p className="text-slate-500 text-xs">Structured daily schedule — follow this to stay on track with your study goal</p>
+    </div>
+    <div className="px-7 pb-7">
+      <div className="flex gap-2 mb-5 flex-wrap">
+        ${PLAN.map(w=>html`
+          <button key=${w.week} onClick=${()=>setWk(w.week)}
+            className=${cx('px-4 py-1.5 rounded text-xs font-bold cursor-pointer border transition-all',
+              wk===w.week?'text-white border-transparent':'bg-transparent border-white/[0.07] text-slate-500 hover:text-slate-300')}
+            style=${wk===w.week?{background:w.color,borderColor:w.color}:{}}>
+            Week ${w.week}: ${w.title}
+          </button>`)}
+      </div>
+      <div className="bg-white/[0.025] border rounded-xl p-5 mb-5" style=${{borderColor:week.color+'28'}}>
+        <div className="flex items-center gap-2 mb-1.5">
+          <div style=${{width:8,height:8,borderRadius:'50%',background:week.color}}/>
+          <h2 className="text-sm font-black">Week ${week.week}: ${week.title}</h2>
+        </div>
+        <p className="text-xs text-slate-500 mb-4">${week.theme}</p>
+        <div className="grid grid-cols-3 gap-3">
+          ${[{l:'Modules',v:week.mods.join(' · ')},{l:'Est. Time',v:Math.floor(totalMin/60)+'h '+totalMin%60+'m'},{l:'Study Days',v:week.days.length+' sessions'}].map((s,i)=>html`
+            <div key=${i} className="bg-white/[0.03] border border-white/[0.07] rounded-lg p-3">
+              <div className="text-[9px] text-slate-600 uppercase tracking-wider mb-1">${s.l}</div>
+              <div className="text-xs font-bold">${s.v}</div>
+            </div>`)}
+        </div>
+      </div>
+      ${week.days.map((day,di)=>html`
+        <div key=${di} className="bg-white/[0.025] border border-white/[0.07] rounded-xl mb-3 overflow-hidden">
+          <div className="px-5 py-3 border-b border-white/[0.06] flex items-center justify-between">
+            <div>
+              <div className="text-sm font-bold">${day.day}</div>
+              <div className="text-xs font-medium" style=${{color:week.color}}>${day.focus}</div>
+            </div>
+            <div className="text-[10px] text-slate-600 font-mono">⏱ ${day.min}min</div>
+          </div>
+          <div className="px-5 py-3">
+            ${day.tasks.map((t,ti)=>html`
+              <div key=${ti} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
+                <div style=${{width:6,height:6,borderRadius:'50%',background:tc[t.type]||'#64748b',flexShrink:0}}/>
+                <span className="text-[10px] font-bold uppercase w-16 flex-shrink-0" style=${{color:tc[t.type]||'#64748b'}}>${t.type}</span>
+                <span className="text-xs flex-1">${t.title}</span>
+                <span className="text-[10px] text-slate-600 font-mono">${t.dur}min</span>
+              </div>`)}
+          </div>
+        </div>`)}
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   REPORTS — STUDENT RECORD
+═══════════════════════════════════════════════ */
+function Reports({data,session}){
+  const ct=data.completedTasks||{};
+  const done=ALL_TASKS.filter(t=>ct[t.id]);
+  const totalXp=done.reduce((s,t)=>s+t.xp,0);
+  const totalSecs=Object.values(data.timeSpent||{}).reduce((a,b)=>a+(b||0),0);
+  const pct=Math.round((done.length/TOTAL_TASKS)*100);
+  const pace=getPace(data,session);
+  const sid=studentId(session.username);
+  const earned=ACHIEVEMENTS.filter(a=>a.fn(data));
+
+  // Task breakdown
+  const bd={read:0,practice:0,build:0};done.forEach(t=>{if(bd[t.type]!==undefined)bd[t.type]++;});
+
+  // Module stats
+  const modStats=MODULES.map(m=>{
+    const d=m.tasks.filter(t=>ct[t.id]).length;
+    const secs=data.timeSpent?.[m.id]||0;
+    const compliance=Math.min(Math.round((secs/3600/m.hours)*100),100);
+    const st=getModStatus(m,ct);
+    return{...m,done:d,pct:Math.round((d/m.tasks.length)*100),secs,compliance,st};
+  });
+
+  const grade=pct>=90?'A':pct>=75?'B':pct>=60?'C':pct>=40?'D':'F';
+  const gradeColor={'A':'#22c55e','B':'#38bdf8','C':'#f59e0b','D':'#f97316','F':'#ef4444'}[grade];
+
+  return html`<div className="ai h-full overflow-y-auto">
+    <div className="px-7 pt-6 pb-0 mb-5">
+      <h1 className="text-xl font-black mb-0.5">📊 Reports & Student Record</h1>
+      <p className="text-slate-500 text-xs">Official progress record · Academic analytics · Achievement log</p>
+    </div>
+    <div className="px-7 pb-7">
+      <!-- Student Record Header -->
+      <div className="bg-white/[0.025] border border-white/[0.08] rounded-xl p-5 mb-5">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="text-[10px] text-slate-600 uppercase tracking-widest mb-1">Official Student Record</div>
+            <div className="text-lg font-black">${session.fullName||session.username}</div>
+            <div className="text-xs font-mono text-slate-500">${sid}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-5xl font-black" style=${{color:gradeColor}}>${grade}</div>
+            <div className="text-[10px] text-slate-600">Overall Grade</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          ${[
+            {l:'Enrollment Date',v:fmtDate(data.enrolledAt||session.at)},
+            {l:'Expected Completion',v:fmtDate(pace.completionDate.toISOString())},
+            {l:'Study Goal',v:session.studyGoal||data.studyGoal||4+' weeks'},
+            {l:'Pace Status',v:pace.label,c:pace.color},
+          ].map((s,i)=>html`
+            <div key=${i} className="bg-white/[0.03] rounded-lg p-3">
+              <div className="text-[9px] text-slate-600 uppercase tracking-wider mb-1">${s.l}</div>
+              <div className="text-xs font-bold" style=${s.c?{color:s.c}:{}}>${s.v}</div>
+            </div>`)}
+        </div>
+        <div className="grid grid-cols-5 gap-3">
+          ${[
+            {l:'Completion',v:pct+'%',c:'#38bdf8'},
+            {l:'Tasks Done',v:done.length+'/'+TOTAL_TASKS,c:'#22c55e'},
+            {l:'XP Score',v:totalXp+'/'+MAX_XP,c:'#f59e0b'},
+            {l:'Hours Logged',v:fmtHrs(totalSecs)+'h',c:'#a855f7'},
+            {l:'Day Streak',v:(data.streak||0)+' days',c:'#f97316'},
+          ].map((s,i)=>html`
+            <div key=${i} className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 text-center">
+              <div className="text-[9px] text-slate-600 uppercase tracking-wider mb-1">${s.l}</div>
+              <div className="text-lg font-black" style=${{color:s.c}}>${s.v}</div>
+            </div>`)}
+        </div>
+      </div>
+
+      <!-- Module Report Table -->
+      <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl overflow-hidden mb-5">
+        <div className="px-5 py-3.5 border-b border-white/[0.06]">
+          <div className="text-xs font-bold">Module Progress Report</div>
+        </div>
+        <div className="overflow-x-auto">
+          <table>
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                ${['#','Module','Status','Tasks','XP','Time Logged','Compliance','Progress'].map(h=>html`
+                  <th key=${h} className="px-4 py-2.5 text-[9px] font-bold text-slate-600 uppercase tracking-wider text-left">${h}</th>`)}
+              </tr>
+            </thead>
+            <tbody>
+              ${modStats.map((m,i)=>html`
+                <tr key=${m.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                  <td className="px-4 py-3 text-xs font-mono text-slate-600">${String(m.num).padStart(2,'0')}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span style=${{fontSize:14}}>${m.emoji}</span>
+                      <span className="text-xs font-medium">${m.title}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3"><${StatusBadge} status=${m.st}/></td>
+                  <td className="px-4 py-3 text-xs font-mono">${m.done}/${m.tasks.length}</td>
+                  <td className="px-4 py-3 text-xs font-mono text-amber-400">${m.tasks.filter(t=>ct[t.id]).reduce((s,t)=>s+t.xp,0)}</td>
+                  <td className="px-4 py-3 text-xs font-mono">${fmtHrs(m.secs)}h</td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs font-bold" style=${{color:m.compliance>=80?'#22c55e':m.compliance>=50?'#f59e0b':'#64748b'}}>${m.compliance}%</span>
+                  </td>
+                  <td className="px-4 py-3" style=${{minWidth:100}}>
+                    <div style=${{height:4,background:'rgba(255,255,255,0.07)',borderRadius:2,overflow:'hidden'}}>
+                      <div style=${{height:'100%',width:m.pct+'%',background:m.accent,borderRadius:2}}/>
+                    </div>
+                  </td>
+                </tr>`)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-5">
+        <!-- Task Breakdown -->
+        <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-5">
+          <div className="text-xs font-bold mb-4">Task Completion by Type</div>
+          ${Object.entries(bd).map(([type,count])=>{
+            const cfg=TC[type]||{c:'#64748b',l:type};
+            const total=ALL_TASKS.filter(t=>t.type===type).length;
+            const p=Math.round((count/total)*100);
+            return html`<div key=${type} className="mb-4 last:mb-0">
+              <div className="flex justify-between text-xs mb-1.5">
+                <div className="flex items-center gap-2">
+                  <div style=${{width:8,height:8,borderRadius:2,background:cfg.c}}/>
+                  <span className="font-medium capitalize">${type}</span>
+                </div>
+                <span className="text-slate-500 font-mono">${count}/${total} (${p}%)</span>
+              </div>
+              <${ProgBar} pct=${p} color=${cfg.c} h=${5}/>
+            </div>`;
+          })}
+        </div>
+
+        <!-- Pace Analysis -->
+        <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-5">
+          <div className="text-xs font-bold mb-4">Pace Analysis</div>
+          <div className="space-y-3">
+            ${[
+              {l:'Days Elapsed',v:pace.daysElapsed+' / '+pace.totalDays},
+              {l:'Timeline Progress',v:Math.round(pace.timePct*100)+'%'},
+              {l:'Content Progress',v:Math.round(pace.contentPct*100)+'%'},
+              {l:'Pace Ratio',v:pace.ratio.toFixed(2)+'× '+(pace.ratio>=1?'↑':'↓')},
+              {l:'Tasks Expected by Now',v:pace.expectedDone},
+              {l:'Tasks Completed',v:done.length},
+              {l:'Gap',v:pace.gap>0?'-'+pace.gap+' tasks':'On target ✓',c:pace.gap>0?'#ef4444':'#22c55e'},
+            ].map((s,i)=>html`
+              <div key=${i} className="flex justify-between text-xs border-b border-white/[0.04] pb-2 last:border-0 last:pb-0">
+                <span className="text-slate-500">${s.l}</span>
+                <span className="font-semibold font-mono" style=${s.c?{color:s.c}:{}}>${s.v}</span>
+              </div>`)}
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xs font-bold">Achievement Record</div>
+          <span className="text-[10px] text-slate-600">${earned.length} / ${ACHIEVEMENTS.length} earned</span>
+        </div>
+        <div className="grid gap-2.5" style=${{gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))'}}>
+          ${ACHIEVEMENTS.map(a=>{
+            const e=a.fn(data);
+            return html`<div key=${a.id} className=${cx('border rounded-xl p-3.5 transition-all',e?'bg-white/[0.03] border-white/[0.1]':'border-white/[0.04]')} style=${!e?{opacity:.3,filter:'grayscale(0.8)'}:{}}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span style=${{fontSize:18}}>${a.emoji}</span>
+                <span className="text-xs font-bold">${a.name}</span>
+              </div>
+              <div className="text-[10px] text-slate-600 leading-snug">${a.desc}</div>
+              ${e&&html`<div className="text-[9px] font-bold text-sky-400 mt-2 uppercase tracking-wider">AWARDED ✓</div>`}
+            </div>`;
+          })}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   NOTES
+═══════════════════════════════════════════════ */
+function Notes({data,setData,toast}){
+  const ct=data.completedTasks||{};
+  const[sel,setSel]=useState(MODULES[0].id);
+  const mod=MODULES.find(m=>m.id===sel);
+  const[note,setNote]=useState(data.moduleNotes?.[sel]||'');
+  const debounceRef=useRef(null);
+
+  useEffect(()=>setNote(data.moduleNotes?.[sel]||''),[sel,data.moduleNotes]);
+
+  const handleChange=v=>{
+    setNote(v);
+    clearTimeout(debounceRef.current);
+    debounceRef.current=setTimeout(()=>{
+      setData(prev=>({...prev,moduleNotes:{...prev.moduleNotes,[sel]:v}}));
+    },800);
+  };
+
+  const save=()=>{setData(prev=>({...prev,moduleNotes:{...prev.moduleNotes,[sel]:note}}));toast('Notes saved','success');};
+  const hasNote=id=>(data.moduleNotes?.[id]||'').length>10;
+  const st=id=>getModStatus(MODULES.find(m=>m.id===id),ct);
+
+  return html`<div className="ai h-full overflow-y-auto">
+    <div className="px-7 pt-6 pb-0 mb-5">
+      <h1 className="text-xl font-black mb-0.5">📝 Study Notes</h1>
+      <p className="text-slate-500 text-xs">Module-by-module notes · Auto-saved as you type</p>
+    </div>
+    <div className="px-7 pb-7 flex gap-5">
+      <!-- Module List -->
+      <div className="w-48 flex-shrink-0">
+        <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl overflow-hidden">
+          ${MODULES.map(m=>{
+            const locked=st(m.id)==='locked';
+            return html`<button key=${m.id} onClick=${()=>!locked&&setSel(m.id)} disabled=${locked}
+              className=${cx('flex items-center gap-2 px-3.5 py-2.5 w-full text-left border-b border-white/[0.04] last:border-0 transition-all',
+                sel===m.id?'bg-sky-500/10':'bg-transparent',
+                locked?'opacity-35 cursor-not-allowed':'cursor-pointer hover:bg-white/[0.03]')}>
+              <span style=${{fontSize:13}}>${m.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <div className=${cx('text-xs font-medium truncate',sel===m.id?'text-sky-400':'text-slate-400')}>${m.title.length>14?m.title.slice(0,14)+'…':m.title}</div>
+                ${locked?html`<div className="text-[9px] text-slate-700">🔒 Locked</div>`:html`<div className="text-[9px] text-slate-700">${hasNote(m.id)?'● Notes saved':'No notes yet'}</div>`}
+              </div>
+            </button>`;
+          })}
+        </div>
+      </div>
+
+      <!-- Editor -->
+      <div className="flex-1">
+        <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-5">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <div className="text-sm font-bold">${mod.emoji} ${mod.title}</div>
+              <div className="text-xs text-slate-600 mt-0.5">${mod.desc}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-700">Auto-saves</span>
+              <button onClick=${save}
+                className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-bold rounded cursor-pointer border-none transition-all">Save Now</button>
+            </div>
+          </div>
+          <textarea rows=${22} value=${note} onInput=${e=>handleChange(e.target.value)}
+            placeholder=${'Notes for '+mod.title+'...\n\nSuggested structure:\n──────────────────\n📌 Key Concepts\n• \n\n💻 Commands Practiced\n$ \n\n🔍 Things to Follow Up\n• \n\n💡 Personal Insights\n• '}
+            className="w-full px-4 py-3.5 bg-white/[0.03] border border-white/[0.07] rounded-lg text-slate-200 text-xs font-mono leading-relaxed resize-y outline-none transition-all focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/20 placeholder:text-slate-700"/>
+          <div className="flex items-center justify-between mt-2.5 text-[10px] text-slate-700">
+            <span>${note.length} characters</span>
+            ${note.length>0&&html`<button onClick=${()=>handleChange('')} className="text-slate-700 hover:text-red-400 bg-transparent border-none cursor-pointer transition-colors">Clear notes</button>`}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   APP ROOT
+═══════════════════════════════════════════════ */
+function App(){
+  const[session,setSession]=useState(()=>getSession());
+  const[view,setView]=useState('dashboard');
+  const[selMod,setSelMod]=useState(null);
+  const[toastState,setToastState]=useState(null);
+  const[viewFile,setViewFile]=useState(null);
+  const[data,setData]=useUserData(session?.username);
+
+  // Set enrollment date on first login
+  useEffect(()=>{
+    if(session&&!data.enrolledAt){
+      setData(prev=>({...prev,enrolledAt:session.at||new Date().toISOString(),studyGoal:session.studyGoal||4}));
+    }
+  },[session]);
+
+  const toast=useCallback((msg,type='success')=>setToastState({msg,type,k:Date.now()}),[]);
+  const logout=()=>{clearSession();setSession(null);setView('dashboard');setSelMod(null);};
+  const totalXp=useMemo(()=>ALL_TASKS.filter(t=>data.completedTasks?.[t.id]).reduce((s,t)=>s+t.xp,0),[data.completedTasks]);
+
+  const goView=useCallback(v=>{setView(v);if(v!=='module-detail')setSelMod(null);},[]);
+  const goModules=useCallback(mod=>{if(mod&&typeof mod==='object'){setSelMod(mod);setView('module-detail');}else{setView('modules');setSelMod(null);}  },[]);
+
+  if(!session)return html`<${AuthScreen} onAuth=${s=>{saveSession(s);setSession(s);}}/>`;
+
+  const renderView=()=>{
+    switch(view){
+      case'dashboard':return html`<${Dashboard} data=${data} session=${session} goModules=${goModules} setView=${setView}/>`;
+      case'modules':return html`<${ModulesList} data=${data} onSelect=${mod=>{setSelMod(mod);setView('module-detail');}}/>`;
+      case'module-detail':return selMod
+        ?html`<${ModuleDetail} mod=${selMod} data=${data} setData=${setData} onBack=${()=>{setSelMod(null);setView('modules');}} toast=${toast} onViewFile=${(mId,f)=>setViewFile({modId:mId,f})}/>`
+        :html`<${ModulesList} data=${data} onSelect=${mod=>{setSelMod(mod);setView('module-detail');}}/>`;
+      case'practice':return html`<${PracticePlan}/>`;
+      case'reports':return html`<${Reports} data=${data} session=${session}/>`;
+      case'notes':return html`<${Notes} data=${data} setData=${setData} toast=${toast}/>`;
+      default:return html`<${Dashboard} data=${data} session=${session} goModules=${goModules} setView=${setView}/>`;
+    }
+  };
+
+  return html`<div className="flex flex-col h-full overflow-hidden bg-[#060b16] text-slate-200">
+    <${Navbar} view=${view} setView=${goView} session=${session} data=${data} totalXp=${totalXp} onLogout=${logout}/>
+    <main className="flex-1 overflow-y-auto overflow-x-hidden">
+      ${renderView()}
+    </main>
+    ${toastState&&html`<${Toast} key=${toastState.k} message=${toastState.msg} type=${toastState.type} onDone=${()=>setToastState(null)}/>`}
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+</script>
+</body>
+</html>
