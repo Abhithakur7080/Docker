@@ -354,13 +354,18 @@ function AuthScreen({onAuth}){
   const[p,setP]=useState('');const[cp,setCp]=useState('');
   const[goal,setGoal]=useState(4);
   const[err,setErr]=useState('');const[ok,setOk]=useState('');
+  
+  const showErr = msg => {
+    alert(msg);
+    setErr(msg);
+  };
 
   const login=e=>{
     e.preventDefault();setErr('');setOk('');
-    if(!u.trim()||!p){setErr('Email and password are required.');return;}
+    if(!u.trim()||!p){showErr('Email and password are required.');return;}
     const users=getUsers();const user=users.find(x=>x.username.toLowerCase()===u.trim().toLowerCase());
-    if(!user){setErr('Account not found. Please register first.');return;}
-    if(user.ph!==h32(p)){setErr('Incorrect password. Please try again.');return;}
+    if(!user){showErr('Account not found. Please register first.');return;}
+    if(user.ph!==h32(p)){showErr('Incorrect password. Please try again.');return;}
     const sess={userId:user.id,username:user.username,fullName:user.fullName||user.username,studyGoal:user.studyGoal||4,at:new Date().toISOString()};
     saveSession(sess);onAuth(sess);
   };
@@ -368,17 +373,18 @@ function AuthScreen({onAuth}){
   const register=e=>{
     e.preventDefault();setErr('');setOk('');
     const emailRegex = /^\S+@\S+\.\S+$/;
-    if(!u.trim()||!emailRegex.test(u.trim())){setErr('A valid email address is required.');return;}
-    if(!fn.trim()||fn.trim().length<2){setErr('Please enter your full name.');return;}
-    if(!p||p.length<6){setErr('Password must be at least 6 characters.');return;}
-    if(!/[A-Z]/.test(p)){setErr('Password must contain at least one uppercase letter.');return;}
-    if(!/[a-z]/.test(p)){setErr('Password must contain at least one lowercase letter.');return;}
-    if(p!==cp){setErr('Passwords do not match.');return;}
+    if(!u.trim()||!emailRegex.test(u.trim())){showErr('A valid email address is required.');return;}
+    if(!fn.trim()||fn.trim().length<2){showErr('Please enter your full name.');return;}
+    if(!p||p.length<6){showErr('Password must be at least 6 characters.');return;}
+    if(!/[A-Z]/.test(p)){showErr('Password must contain at least one uppercase letter.');return;}
+    if(!/[a-z]/.test(p)){showErr('Password must contain at least one lowercase letter.');return;}
+    if(p!==cp){showErr('Passwords do not match.');return;}
     
     const users=getUsers();
-    if(users.some(x=>x.username.toLowerCase()===u.trim().toLowerCase())){setErr('This email is already registered.');return;}
+    if(users.some(x=>x.username.toLowerCase()===u.trim().toLowerCase())){showErr('This email is already registered.');return;}
     
     saveUsers([...users,{id:'u'+Date.now(),username:u.trim(),fullName:fn.trim(),studyGoal:goal,ph:h32(p),at:new Date().toISOString()}]);
+    alert('Account created successfully. Please sign in.');
     setOk('Account created successfully. Please sign in.');setTab('login');setP('');setCp('');
   };
   
