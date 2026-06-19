@@ -356,7 +356,6 @@ function AuthScreen({onAuth}){
   const[err,setErr]=useState('');const[ok,setOk]=useState('');
   
   const showErr = msg => {
-    alert(msg);
     setErr(msg);
   };
 
@@ -384,7 +383,6 @@ function AuthScreen({onAuth}){
     if(users.some(x=>x.username.toLowerCase()===u.trim().toLowerCase())){showErr('This email is already registered.');return;}
     
     saveUsers([...users,{id:'u'+Date.now(),username:u.trim(),fullName:fn.trim(),studyGoal:goal,ph:h32(p),at:new Date().toISOString()}]);
-    alert('Account created successfully. Please sign in.');
     setOk('Account created successfully. Please sign in.');setTab('login');setP('');setCp('');
   };
   
