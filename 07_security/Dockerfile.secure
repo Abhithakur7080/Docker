@@ -1,0 +1,100 @@
+# syntax=docker/dockerfile:1
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  🔐 Security-Hardened Dockerfile (Node.js Example)
+#  Apply these patterns to any language/runtime
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Stage 1: Builder ──────────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
+
+# Install dumb-init (proper signal handling)
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+# Cache dependency installation separately from code
+COPY package*.json ./
+
+# BuildKit: cache npm downloads (speeds up rebuilds)
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --only=production && \
+    npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Build (TypeScript compile, etc.)
+RUN npm run build
+
+# Remove dev files that crept in
+RUN find . -name "*.ts" -not -path "./node_modules/*" -delete && \
+    find . -name "*.test.js" -delete && \
+    find . -name "*.spec.js" -delete
+
+# ── Stage 2: Security-hardened production image ───────────────────────────────
+FROM node:20-alpine AS production
+
+# ── Security: Package updates ──────────────────────────────────────────────────
+# Upgrade all packages to get latest security patches
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache \
+      dumb-init \
+      wget \
+    && rm -rf /var/cache/apk/*
+
+# ── Security: Create non-root user ────────────────────────────────────────────
+RUN addgroup --system --gid 1001 appgroup && \
+    adduser --system \
+            --uid 1001 \
+            --ingroup appgroup \
+            --home /app \
+            --shell /bin/false \
+            --no-create-home \
+            appuser
+
+WORKDIR /app
+
+# ── Security: Copy with correct ownership ─────────────────────────────────────
+COPY --from=builder --chown=appuser:appgroup /usr/bin/dumb-init /usr/bin/dumb-init
+COPY --from=builder --chown=appuser:appgroup /app/node_modules ./node_modules
+COPY --from=builder --chown=appuser:appgroup /app/dist ./dist
+COPY --from=builder --chown=appuser:appgroup /app/package.json ./
+
+# ── Security: Remove SUID/SGID bits ───────────────────────────────────────────
+RUN find / -perm /6000 -type f -exec chmod a-s {} \; 2>/dev/null || true
+
+# ── Runtime configuration ──────────────────────────────────────────────────────
+ENV NODE_ENV=production \
+    PORT=3000 \
+    # Reduce memory fingerprinting
+    NODE_OPTIONS="--max-old-space-size=256 --no-experimental-fetch"
+
+# ── Security: Drop to non-root ────────────────────────────────────────────────
+USER appuser
+
+# ── Health check ──────────────────────────────────────────────────────────────
+HEALTHCHECK --interval=30s \
+            --timeout=5s \
+            --start-period=30s \
+            --retries=3 \
+  CMD wget -qO- http://localhost:${PORT}/health || exit 1
+
+EXPOSE 3000
+
+# ── Entrypoint: dumb-init for proper signal handling ──────────────────────────
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/server.js"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Security summary for this image:
+# ✅ Non-root user (uid=1001)
+# ✅ dumb-init for signal handling
+# ✅ Multi-stage (no build tools in final)
+# ✅ Packages updated to latest security patches
+# ✅ SUID/SGID bits removed
+# ✅ Minimal Alpine base
+# ✅ Health check defined
+# ✅ Resource-limited via NODE_OPTIONS
+# ─────────────────────────────────────────────────────────────────────────────

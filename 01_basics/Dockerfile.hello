@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+# Hello World — Your First Dockerfile
+
+FROM alpine:3.19
+
+LABEL maintainer="your-email@example.com"
+LABEL description="Hello World Docker example"
+LABEL version="1.0"
+
+# Print a message when the container runs
+CMD ["echo", "🐳 Hello from your first Docker container!"]
