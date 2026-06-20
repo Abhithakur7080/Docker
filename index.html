@@ -1639,6 +1639,8 @@ function App(){
   const[viewFile,setViewFile]=useState(null);
   const[data,setData]=useUserData(session?.username);
 
+  const[quizMod,setQuizMod]=useState(null);
+
   // Set enrollment date on first login
   useEffect(()=>{
     if(session&&!data.enrolledAt){
@@ -1675,6 +1677,7 @@ function App(){
       ${renderView()}
     </main>
     ${toastState&&html`<${Toast} key=${toastState.k} message=${toastState.msg} type=${toastState.type} onDone=${()=>setToastState(null)}/>`}
+    ${quizMod&&html`<${QuizScreen} mod=${quizMod} data=${data} setData=${setData} onClose=${()=>setQuizMod(null)} onPass=${()=>setQuizMod(null)} toast=${toast}/>`}
   </div>`;
 }
 
