@@ -886,6 +886,10 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz,goMo
         const slug = String(text).toLowerCase().replace(/[^\w]+/g, '-');
         return `<h${level} id="${slug}">${text}</h${level}>`;
       };
+      renderer.codespan = function(arg) {
+        const text = typeof arg === 'object' ? arg.text : String(arg);
+        return `<code class="bg-[#0f172a] border border-white/10 px-1.5 py-0.5 rounded-md text-sky-300 font-mono font-semibold before:content-none after:content-none shadow-sm">${text}</code>`;
+      };
       marked.use({ renderer });
     }
   }, []);
