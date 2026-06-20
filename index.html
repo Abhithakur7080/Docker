@@ -881,10 +881,13 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz,goMo
       window._markedIdsConfigured = true;
       const renderer = new marked.Renderer();
       renderer.heading = function(arg1, arg2) {
-        const text = typeof arg1 === 'object' ? arg1.text : String(arg1);
-        const level = typeof arg1 === 'object' ? arg1.depth : arg2;
-        const slug = String(text).toLowerCase().replace(/[^\w]+/g, '-');
-        return `<h${level} id="${slug}">${text}</h${level}>`;
+        const isObj = typeof arg1 === 'object';
+        const rawText = isObj ? arg1.text : String(arg1);
+        const level = isObj ? arg1.depth : arg2;
+        const slug = String(rawText).toLowerCase().replace(/[^\w]+/g, '-');
+        // Parse inline markdown inside the heading (like `code`) so it renders properly
+        const htmlText = (isObj && arg1.tokens) ? this.parser.parseInline(arg1.tokens) : (window.marked.parseInline ? window.marked.parseInline(rawText) : rawText);
+        return `<h${level} id="${slug}">${htmlText}</h${level}>`;
       };
       renderer.codespan = function(arg) {
         const text = typeof arg === 'object' ? arg.text : String(arg);
