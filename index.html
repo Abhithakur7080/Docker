@@ -920,7 +920,12 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz,goMo
         } else {
           const targetMod = MODULES.find(m => m.files.includes(filename));
           if (targetMod && goModules) {
-            goModules(targetMod);
+            const targetSt = getModStatus(targetMod, data.completedTasks || {}, data.quizResults || {});
+            if (targetSt === 'locked') {
+              toast('Complete the current module tasks and quiz to unlock the next module!', 'error');
+            } else {
+              goModules(targetMod);
+            }
           }
         }
       }
