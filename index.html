@@ -892,19 +892,36 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz,goMo
 
   const handleContentClick = (e) => {
     const a = e.target.closest('a');
-    if (a && a.getAttribute('href')?.startsWith('#')) {
-      e.preventDefault();
-      const id = a.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
-      if (target) {
-        const scrollContainer = target.closest('.overflow-y-auto');
-        if (scrollContainer) {
-          scrollContainer.scrollTo({
-            top: target.offsetTop - scrollContainer.offsetTop - 20,
-            behavior: 'smooth'
-          });
+    if (a) {
+      const href = a.getAttribute('href');
+      if (href?.startsWith('#')) {
+        e.preventDefault();
+        const id = href.slice(1);
+        const target = document.getElementById(id);
+        if (target) {
+          const scrollContainer = target.closest('.overflow-y-auto');
+          if (scrollContainer) {
+            scrollContainer.scrollTo({
+              top: target.offsetTop - scrollContainer.offsetTop - 20,
+              behavior: 'smooth'
+            });
+          } else {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      } else if (href?.endsWith('.md')) {
+        e.preventDefault();
+        const filename = href.split('/').pop();
+        if (mod.files.includes(filename)) {
+          setActiveFile(filename);
+          // Scroll back to top when switching files
+          const scrollContainer = e.currentTarget;
+          if (scrollContainer) scrollContainer.scrollTo({top: 0, behavior: 'smooth'});
         } else {
-          target.scrollIntoView({ behavior: 'smooth' });
+          const targetMod = MODULES.find(m => m.files.includes(filename));
+          if (targetMod && goModules) {
+            goModules(targetMod);
+          }
         }
       }
     }
@@ -1643,7 +1660,7 @@ function App(){
       case'dashboard':return html`<${Dashboard} data=${data} session=${session} goModules=${goModules} setView=${setView}/>`;
       case'modules':return html`<${ModulesList} data=${data} onSelect=${mod=>{setSelMod(mod);setView('module-detail');}}/>`;
       case'module-detail':return selMod
-        ?html`<${ModuleDetail} mod=${selMod} data=${data} setData=${setData} onBack=${()=>{setSelMod(null);setView('modules');}} toast=${toast} onViewFile=${(mId,f)=>setViewFile({modId:mId,f})} onStartQuiz=${m=>setQuizMod(m)} goModules=${goModules}/>`
+        ?html`<${ModuleDetail} key=${selMod.id} mod=${selMod} data=${data} setData=${setData} onBack=${()=>{setSelMod(null);setView('modules');}} toast=${toast} onViewFile=${(mId,f)=>setViewFile({modId:mId,f})} onStartQuiz=${m=>setQuizMod(m)} goModules=${goModules}/>`
         :html`<${ModulesList} data=${data} onSelect=${mod=>{setSelMod(mod);setView('module-detail');}}/>`;
       case'practice':return html`<${PracticePlan}/>`;
       case'reports':return html`<${Reports} data=${data} session=${session}/>`;
