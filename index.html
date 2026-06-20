@@ -1038,53 +1038,76 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz,goMo
             ${f}
           </button>
         `)}
+        <div className="w-px h-4 bg-white/10 mx-2"></div>
+        <button onClick=${() => {
+            if (!allTasksDone) toast('Complete all action items to unlock the quiz!', 'error');
+            else setActiveFile('__quiz__');
+          }}
+          className=${cx('px-4 py-2 text-[11px] font-mono transition-all border-b-2 cursor-pointer bg-transparent whitespace-nowrap flex items-center gap-1.5',
+            activeFile==='__quiz__'?'text-amber-400 border-amber-400 font-bold'
+              : !allTasksDone ? 'text-slate-600 border-transparent cursor-not-allowed'
+              : 'text-amber-500/70 border-transparent hover:text-amber-400 hover:bg-white/[0.02]'
+          )}>
+          ${!allTasksDone ? html`<span className="text-[10px]">🔒</span>` : html`<span className="text-[10px]">🎓</span>`}
+          Quiz
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 relative scroll-smooth" onClick=${handleContentClick}>
-        <article className="prose prose-sm prose-invert prose-sky max-w-none pb-24">
-          <div dangerouslySetInnerHTML=${{__html: window.marked ? marked.parse(window.COURSE_CONTENT?.[mod.id+'/'+activeFile] || '') : ''}} />
-        </article>
-
-        ${allTasksDone&&html`
-          <div className="mt-16 border-t border-white/[0.05] pt-12">
-            ${quizPassed
-              ?html`<div className="bg-green-500/10 border border-green-500/25 rounded-2xl p-6 flex items-center gap-5">
-                <div className="text-4xl">🎓</div>
-                <div className="flex-1">
-                  <div className="text-sm font-black text-green-400 mb-1">Lesson Quiz Passed ✓</div>
-                  <div className="text-xs text-slate-500">Score: ${qr[mod.id]?.score}/5 · Completed ${fmtDate(qr[mod.id]?.at)}</div>
-                </div>
-                <div className="text-[10px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-full">+50 XP Bonus</div>
-              </div>`
-              :html`<div className="bg-gradient-to-r from-sky-500/10 to-indigo-500/10 border border-sky-500/25 rounded-2xl p-6 flex items-center gap-5">
-                <div className="text-4xl">📝</div>
-                <div className="flex-1">
-                  <div className="text-sm font-black text-sky-300 mb-1">All Tasks Complete! Take the Lesson Quiz</div>
-                  <div className="text-xs text-slate-500">Pass 4/5 questions to unlock the next lesson and earn +50 bonus XP</div>
-                </div>
-                <button onClick=${()=>onStartQuiz(mod)}
-                  className="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white text-sm font-black rounded-xl cursor-pointer border-none transition-all shadow-lg shadow-sky-500/25 hover:-translate-y-0.5 whitespace-nowrap">
-                  Start Quiz →
-                </button>
-              </div>`}
+        ${activeFile === '__quiz__' ? html`
+          <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center pb-12">
+            ${quizPassed ? html`
+              <div className="text-7xl mb-6">🏆</div>
+              <h2 className="text-3xl font-black mb-3 text-green-400">Quiz Passed!</h2>
+              <p className="text-slate-400 mb-8 text-base">Score: ${qr[mod.id]?.score}/5 · Completed ${fmtDate(qr[mod.id]?.at)}</p>
+              <button onClick=${()=>onStartQuiz(mod)}
+                 className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-xl cursor-pointer border-none transition-all whitespace-nowrap">
+                 Retake Quiz
+              </button>
+            ` : html`
+              <div className="text-7xl mb-6">🎓</div>
+              <h2 className="text-3xl font-black mb-3 text-amber-400">Lesson Quiz</h2>
+              <p className="text-slate-400 mb-8 max-w-sm mx-auto text-base">Pass 4/5 questions to unlock the next lesson and earn +50 bonus XP</p>
+              <button onClick=${()=>onStartQuiz(mod)}
+                 className="px-10 py-4 bg-amber-500 hover:bg-amber-400 text-white text-lg font-black rounded-xl cursor-pointer border-none transition-all shadow-xl shadow-amber-500/25 hover:-translate-y-1 whitespace-nowrap">
+                 Start Quiz →
+              </button>
+            `}
           </div>
-        `}
-
+        ` : (activeFile.endsWith('.md') ? html`
+          <article className="prose prose-sm prose-invert prose-sky max-w-none pb-24">
+            <div dangerouslySetInnerHTML=${{__html: window.marked ? marked.parse(window.COURSE_CONTENT?.[mod.id+'/'+activeFile] || '') : ''}} />
+          </article>
+        ` : html`
+          <div className="relative pb-24 h-full">
+            <div className="absolute right-4 top-4 flex gap-2 z-10">
+              <button onClick=${()=>{
+                navigator.clipboard.writeText(window.COURSE_CONTENT?.[mod.id+'/'+activeFile] || '');
+                toast('Copied to clipboard!', 'success');
+              }} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-xs font-mono rounded cursor-pointer transition-colors border border-white/10 flex items-center gap-1 shadow-lg backdrop-blur">
+                📋 Copy
+              </button>
+            </div>
+            <pre className="p-6 bg-[#03060c] rounded-xl overflow-x-auto text-sm font-mono border border-white/5 shadow-inner text-slate-300 min-h-full"><code className="language-bash block">${window.COURSE_CONTENT?.[mod.id+'/'+activeFile] || ''}</code></pre>
+          </div>
+        `)}
       </div>
 
       <footer className="px-6 py-4 border-t border-white/[0.05] shrink-0 bg-black/20 flex items-center justify-between z-10">
         <div className="text-xs font-semibold text-slate-500 flex items-center gap-2">
           <span>Current File:</span>
-          <span className="text-sky-400 font-mono bg-sky-500/10 px-2 py-1 rounded">${activeFile}</span>
+          <span className="text-sky-400 font-mono bg-sky-500/10 px-2 py-1 rounded">${activeFile === '__quiz__' ? 'Quiz' : activeFile}</span>
         </div>
-        <button onClick=${()=>currentTask && toggleTask(currentTask)}
-          className=${cx('px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 cursor-pointer shadow-xl',
-            isCurrentTaskDone 
-              ? 'bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20'
-              : 'bg-sky-500 text-white hover:bg-sky-400 border-none shadow-sky-500/20 hover:-translate-y-0.5'
-          )}>
-          ${isCurrentTaskDone ? html`<span>✓</span> <span>Completed</span>` : html`Mark as Complete`}
-        </button>
+        ${currentTask ? html`
+          <button onClick=${()=>toggleTask(currentTask)}
+            className=${cx('px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 cursor-pointer shadow-xl',
+              isCurrentTaskDone 
+                ? 'bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20'
+                : 'bg-sky-500 text-white hover:bg-sky-400 border-none shadow-sky-500/20 hover:-translate-y-0.5'
+            )}>
+            ${isCurrentTaskDone ? html`<span>✓</span> <span>Completed</span>` : html`Mark as Complete`}
+          </button>
+        ` : null}
       </footer>
     </main>
 
