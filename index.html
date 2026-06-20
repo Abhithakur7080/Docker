@@ -873,10 +873,12 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz}){
   const[sessElapsed,setSessElapsed]=useState(0);
   const savedTime=data.timeSpent?.[mod.id]||0;
   const[note,setNote]=useState(data.moduleNotes?.[mod.id]||'');
+  const[activeFile,setActiveFile]=useState(mod.files[0]);
   const autoSaveRef=useRef(null);
 
   useEffect(()=>{
     setNote(data.moduleNotes?.[mod.id]||'');
+    setActiveFile(mod.files[0]);
     startTs.current=Date.now();
     const tick=setInterval(()=>setSessElapsed(Math.floor((Date.now()-startTs.current)/1000)),1000);
     autoSaveRef.current=setInterval(()=>{
@@ -938,12 +940,18 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz}){
       </div>
     </header>
 
-    <article className="prose prose-invert prose-sky max-w-none mb-16 bg-[#0a1020] border border-white/[0.05] rounded-2xl p-8 shadow-2xl">
+    <div className="flex items-center gap-2 mb-0 overflow-x-auto border-b border-white/[0.05]">
       ${mod.files.map(f=>html`
-        <div key=${f} className="mb-12 last:mb-0">
-          <div dangerouslySetInnerHTML=${{__html: window.marked ? marked.parse(window.COURSE_CONTENT?.[mod.id+'/'+f] || '') : ''}} />
-        </div>
+        <button key=${f} onClick=${()=>setActiveFile(f)}
+          className=${cx('px-5 py-3 text-xs font-mono transition-all border-b-2 cursor-pointer bg-transparent',
+            activeFile===f?'text-sky-400 border-sky-400':'text-slate-500 border-transparent hover:text-slate-300 hover:bg-white/[0.02]')}>
+          ${f}
+        </button>
       `)}
+    </div>
+
+    <article className="prose prose-invert prose-sky max-w-none mb-16 bg-[#0a1020] border border-white/[0.05] border-t-0 rounded-b-2xl p-8 shadow-2xl">
+      <div dangerouslySetInnerHTML=${{__html: window.marked ? marked.parse(window.COURSE_CONTENT?.[mod.id+'/'+activeFile] || '') : ''}} />
     </article>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
