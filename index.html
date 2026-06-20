@@ -1616,7 +1616,7 @@ function App(){
   const totalXp=useMemo(()=>ALL_TASKS.filter(t=>data.completedTasks?.[t.id]).reduce((s,t)=>s+t.xp,0),[data.completedTasks]);
 
   const goView=useCallback(v=>{setView(v);if(v!=='module-detail')setSelMod(null);},[]);
-  const goModules=useCallback(mod=>{if(mod&&typeof mod==='object'){setSelMod(mod);setView('module-detail');}else{setView('modules');setSelMod(null);}  },[]);
+  const goModules=useCallback(mod=>{if(mod&&mod.id){setSelMod(mod);setView('module-detail');}else{setView('modules');setSelMod(null);}  },[]);
 
   if(!session)return html`<${AuthScreen} onAuth=${s=>{saveSession(s);setSession(s);}}/>`;
 
