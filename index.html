@@ -74,6 +74,13 @@ const MODULES=[
     {id:'01-t3',title:'Run hello-world container',desc:'docker run hello-world — validate your Docker installation',type:'practice',xp:30},
     {id:'01-t4',title:'Drill 5 core CLI commands',desc:'run · ps · stop · rm · images — repeat until fluent',type:'practice',xp:40},
     {id:'01-t5',title:'Build & run Dockerfile.hello',desc:'docker build -t hello . && docker run hello',type:'build',xp:50},
+   ],
+   quiz:[
+    {q:'What does a Docker image contain?',opts:['Only source code','A lightweight OS, runtime, and app code','Just environment variables','Only the Dockerfile'],correctIndex:1},
+    {q:'Which command starts a container in detached mode?',opts:['docker run','docker run -d','docker start -b','docker exec'],correctIndex:1},
+    {q:'What is a Docker registry?',opts:['A local file system cache','A server that stores Docker images','A container monitoring tool','A network driver'],correctIndex:1},
+    {q:'Which command lists all running containers?',opts:['docker images','docker ps','docker ls','docker status'],correctIndex:1},
+    {q:'What does "docker stop <id>" do?',opts:['Deletes the container','Pauses the container','Gracefully stops the container','Removes the image'],correctIndex:2},
    ]},
   {id:'02_images',num:2,title:'Docker Images',emoji:'📦',level:'Beginner',lvlColor:'#22c55e',week:1,accent:'#06b6d4',
    desc:'Dockerfile deep dive, image optimization, and layer caching strategy.',hours:5,
@@ -84,6 +91,13 @@ const MODULES=[
     {id:'02-t3',title:'Build Dockerfile.optimized',desc:'Compile the optimized multi-stage image from source',type:'build',xp:40},
     {id:'02-t4',title:'Benchmark image sizes',desc:'Compare naive vs optimized: docker images ls --format',type:'practice',xp:50},
     {id:'02-t5',title:'Push image to Docker Hub',desc:'docker tag + docker push — publish to public registry',type:'practice',xp:60},
+   ],
+   quiz:[
+    {q:'Which Dockerfile instruction sets the base image?',opts:['BASE','FROM','IMAGE','ORIGIN'],correctIndex:1},
+    {q:'What does "docker build -t myapp:1.0 ." do?',opts:['Runs a container','Builds an image with tag myapp:1.0 from current dir','Downloads myapp from Docker Hub','Tags an existing container'],correctIndex:1},
+    {q:'Which layer caching strategy improves build speed?',opts:['Put COPY . . before RUN npm install','Copy package.json first, then npm install, then COPY .','Never use cache','Use --no-cache always'],correctIndex:1},
+    {q:'What does "docker push" do?',opts:['Pushes commits to git','Uploads an image to a registry','Starts a container','Updates the Dockerfile'],correctIndex:1},
+    {q:'Which instruction is used to define build-time variables?',opts:['ENV','VAR','ARG','SET'],correctIndex:2},
    ]},
   {id:'03_compose',num:3,title:'Docker Compose',emoji:'🎼',level:'Beginner',lvlColor:'#22c55e',week:1,accent:'#4f46e5',
    desc:'Multi-container orchestration with Docker Compose v2.',hours:5,
@@ -94,6 +108,13 @@ const MODULES=[
     {id:'03-t3',title:'Analyse docker-compose.prod.yml',desc:'Production override file patterns and security differences',type:'read',xp:20},
     {id:'03-t4',title:'Add a Redis service',desc:'Extend docker-compose.yml — wire Redis to the web service',type:'build',xp:60},
     {id:'03-t5',title:'Test horizontal scaling',desc:'docker compose up --scale web=3 — confirm load balancing',type:'practice',xp:50},
+   ],
+   quiz:[
+    {q:'Which file does Docker Compose read by default?',opts:['compose.yaml','docker-compose.yml','Dockerfile','config.yml'],correctIndex:1},
+    {q:'What does "docker compose up -d" do?',opts:['Builds images only','Starts services in detached (background) mode','Removes all containers','Shows logs'],correctIndex:1},
+    {q:'How do you scale a service to 3 replicas in Compose?',opts:['docker compose scale=3','docker compose up --scale web=3','docker replicate web 3','docker compose replicas 3'],correctIndex:1},
+    {q:'What is a Compose "service"?',opts:['A running container defined in compose file','A Docker network','A named volume','A build step'],correctIndex:0},
+    {q:'Which key defines environment variables for a service in Compose?',opts:['vars','environment','config','env_file only'],correctIndex:1},
    ]},
   {id:'04_networking',num:4,title:'Networking',emoji:'🌐',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#8b5cf6',
    desc:'Container networking, custom networks, and service discovery.',hours:4,
@@ -104,6 +125,13 @@ const MODULES=[
     {id:'04-t3',title:'Test container DNS resolution',desc:'docker exec — ping containers by service name',type:'practice',xp:50},
     {id:'04-t4',title:'Run networking compose example',desc:'Deploy and trace traffic through the compose network stack',type:'build',xp:40},
     {id:'04-t5',title:'Inspect network config (JSON)',desc:'docker network inspect -- analyse the full output',type:'practice',xp:30},
+   ],
+   quiz:[
+    {q:'What is the default network driver for Docker?',opts:['host','overlay','bridge','macvlan'],correctIndex:2},
+    {q:'How do containers in the same Compose network communicate?',opts:['By IP address only','By service name via DNS','Through the host network','Using external load balancers'],correctIndex:1},
+    {q:'Which network mode gives a container direct host network access?',opts:['bridge','none','overlay','host'],correctIndex:3},
+    {q:'What command creates a custom Docker network?',opts:['docker network create','docker net new','docker create network','docker bridge add'],correctIndex:0},
+    {q:'Which network driver is used for multi-host Swarm networking?',opts:['bridge','host','overlay','macvlan'],correctIndex:2},
    ]},
   {id:'05_storage',num:5,title:'Storage & Volumes',emoji:'💾',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#10b981',
    desc:'Persistent data with named volumes, bind mounts, and tmpfs.',hours:4,
@@ -114,6 +142,13 @@ const MODULES=[
     {id:'05-t3',title:'Test bind mounts',desc:'Mount local host directory — observe live file sync',type:'practice',xp:40},
     {id:'05-t4',title:'Run storage compose example',desc:'Verify data survives docker compose down + up cycle',type:'build',xp:50},
     {id:'05-t5',title:'Create a volume backup',desc:'docker run + tar to create .tar.gz archive of volume data',type:'practice',xp:60},
+   ],
+   quiz:[
+    {q:'What is a Docker named volume?',opts:['A bind mount to the host','A managed storage area created by Docker','An in-memory filesystem','A network share'],correctIndex:1},
+    {q:'Which storage type provides the best performance on Linux?',opts:['Bind mounts','Named volumes','tmpfs mounts','NFS mounts'],correctIndex:1},
+    {q:'What does tmpfs mount store data in?',opts:['The host filesystem','A Docker-managed directory','Host memory (RAM)','The container image layer'],correctIndex:2},
+    {q:'Which command creates a named volume?',opts:['docker storage create','docker volume create','docker mount new','docker vol add'],correctIndex:1},
+    {q:'What happens to data in a named volume when a container is removed?',opts:['It is deleted automatically','It persists independently of the container','It is archived to .tar.gz','It moves to the image layer'],correctIndex:1},
    ]},
   {id:'06_multi_stage',num:6,title:'Multi-Stage Builds',emoji:'⚙️',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#f97316',
    desc:'Dramatically reduce production image sizes with multi-stage Dockerfiles.',hours:3,
@@ -123,6 +158,13 @@ const MODULES=[
     {id:'06-t2',title:'Build the multi-stage Dockerfile',desc:'docker build -t app:ms . — measure final image size',type:'build',xp:50},
     {id:'06-t3',title:'Size comparison analysis',desc:'Single-stage vs multi-stage — document the reduction %',type:'practice',xp:40},
     {id:'06-t4',title:'Add a dedicated test stage',desc:'Insert a RUN go test ./... stage before the final stage',type:'build',xp:60},
+   ],
+   quiz:[
+    {q:'What is the primary benefit of multi-stage builds?',opts:['Faster runtime performance','Smaller final image size','Better networking','More environment variables'],correctIndex:1},
+    {q:'How do you copy files from a build stage to the final stage?',opts:['COPY --from=builder','COPY --stage=builder','FROM builder COPY','IMPORT --from=builder'],correctIndex:0},
+    {q:'Which instruction names a build stage?',opts:['STAGE builder','FROM node:18 AS builder','NAME=builder','LABEL stage=builder'],correctIndex:1},
+    {q:'Why use multi-stage builds for compiled languages?',opts:['To use more memory','To exclude build tools from the final image','To speed up compilation','To avoid using FROM'],correctIndex:1},
+    {q:'What is the target flag used for in docker build?',opts:['Sets the output directory','Builds only up to a specific named stage','Targets a specific OS architecture','Sets the build context'],correctIndex:1},
    ]},
   {id:'07_security',num:7,title:'Container Security',emoji:'🔒',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#ec4899',
    desc:'Container hardening, vulnerability scanning, and principle of least privilege.',hours:5,
@@ -133,6 +175,13 @@ const MODULES=[
     {id:'07-t3',title:'Verify non-root execution',desc:'docker inspect + docker exec id — confirm UID != 0',type:'practice',xp:40},
     {id:'07-t4',title:'CVE scan with Trivy',desc:'trivy image <image> -- triage HIGH/CRITICAL findings',type:'practice',xp:60},
     {id:'07-t5',title:'Apply read-only root filesystem',desc:'docker run --read-only --tmpfs /tmp — validate workload',type:'practice',xp:50},
+   ],
+   quiz:[
+    {q:'Why should containers NOT run as root?',opts:['Root causes slower performance','A compromised root container can damage the host','Root containers cannot use volumes','Docker does not support root users'],correctIndex:1},
+    {q:'What does --read-only flag do when running a container?',opts:['Makes the image read-only','Prevents writes to the container filesystem','Disables network access','Prevents environment variable changes'],correctIndex:1},
+    {q:'Which tool scans Docker images for CVEs?',opts:['docker scan (Trivy)','docker audit','docker check','nmap'],correctIndex:0},
+    {q:'What is the USER instruction in a Dockerfile for?',opts:['Sets container hostname','Sets the user for subsequent RUN/CMD/ENTRYPOINT instructions','Adds a new Linux user to the system only','Defines the build user'],correctIndex:1},
+    {q:'What are Linux capabilities in the context of Docker security?',opts:['Docker network features','Fine-grained privileges that can be added/dropped from containers','Container resource limits','Docker volume permissions'],correctIndex:1},
    ]},
   {id:'08_orchestration',num:8,title:'Orchestration',emoji:'🎯',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#6366f1',
    desc:'Docker Swarm mode clustering and Kubernetes migration patterns.',hours:6,
@@ -143,6 +192,13 @@ const MODULES=[
     {id:'08-t3',title:'Initialise a Swarm cluster',desc:'docker swarm init -- note join token for worker nodes',type:'practice',xp:60},
     {id:'08-t4',title:'Deploy a Swarm stack',desc:'docker stack deploy -c docker-compose.yml my_stack',type:'build',xp:70},
     {id:'08-t5',title:'Rolling update & scale test',desc:'docker service scale web=3 + service update --image v2',type:'practice',xp:60},
+   ],
+   quiz:[
+    {q:'What is Docker Swarm?',opts:['A container monitoring tool','A native Docker clustering and orchestration system','A container image format','A network plugin'],correctIndex:1},
+    {q:'What is a Swarm "service"?',opts:['A single container','A definition of tasks to run across the swarm','A network configuration','A volume type'],correctIndex:1},
+    {q:'Which command initializes a Swarm manager node?',opts:['docker swarm start','docker swarm init','docker cluster init','docker manager init'],correctIndex:1},
+    {q:'What is a Swarm "stack"?',opts:['A collection of services defined in a Compose file deployed to Swarm','A single container','A Docker network','A volume group'],correctIndex:0},
+    {q:'How do you perform a rolling update in Swarm?',opts:['docker service restart','docker service update --image','docker swarm update','docker rollout update'],correctIndex:1},
    ]},
   {id:'09_cicd',num:9,title:'CI/CD Integration',emoji:'🔄',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#14b8a6',
    desc:'Automated Docker builds, testing, and publishing via GitHub Actions & GitLab CI.',hours:5,
@@ -153,6 +209,13 @@ const MODULES=[
     {id:'09-t3',title:'Implement GitHub Actions pipeline',desc:'Create .github/workflows/docker.yml from the template',type:'build',xp:80},
     {id:'09-t4',title:'Analyse gitlab_ci.yml',desc:'GitLab DinD · docker:stable runner · registry auth',type:'read',xp:20},
     {id:'09-t5',title:'Trigger automated build',desc:'Push a commit — verify pipeline executes and image publishes',type:'practice',xp:80},
+   ],
+   quiz:[
+    {q:'What does CI/CD stand for?',opts:['Container Integration/Container Deployment','Continuous Integration/Continuous Delivery','Code Integration/Code Deployment','Continuous Inspection/Continuous Distribution'],correctIndex:1},
+    {q:'Which GitHub Actions action is used to build and push Docker images?',opts:['actions/checkout','docker/build-push-action','docker/login-action','actions/docker-build'],correctIndex:1},
+    {q:'What is the benefit of layer caching in CI pipelines?',opts:['Reduces security vulnerabilities','Speeds up build times by reusing unchanged layers','Reduces image size','Improves runtime performance'],correctIndex:1},
+    {q:'What is OIDC used for in Docker CI/CD with cloud providers?',opts:['Image scanning','Keyless authentication between CI and cloud registries','Container networking','Building multi-arch images'],correctIndex:1},
+    {q:'What does "docker buildx" enable?',opts:['Faster single-platform builds','Multi-platform image building (amd64, arm64, etc.)','Extended volume support','Swarm cluster management'],correctIndex:1},
    ]},
   {id:'10_production',num:10,title:'Production Deployment',emoji:'🏭',level:'Expert',lvlColor:'#a855f7',week:4,accent:'#f59e0b',
    desc:'Production-grade stacks: health checks, restart policies, limits, and secrets.',hours:6,
@@ -163,6 +226,13 @@ const MODULES=[
     {id:'10-t3',title:'Implement HEALTHCHECK directives',desc:'Add HEALTHCHECK with interval, timeout, retries to each image',type:'build',xp:60},
     {id:'10-t4',title:'Validate restart policies',desc:'Test on-failure:5 · always · unless-stopped behaviours',type:'practice',xp:40},
     {id:'10-t5',title:'Enforce resource limits',desc:'deploy.resources.limits: cpus + memory in compose file',type:'practice',xp:50},
+   ],
+   quiz:[
+    {q:'What does a HEALTHCHECK instruction do in a Dockerfile?',opts:['Scans for vulnerabilities','Defines how Docker tests if a container is healthy','Sets resource limits','Validates the Dockerfile syntax'],correctIndex:1},
+    {q:'Which restart policy ensures a container always restarts?',opts:['on-failure','unless-stopped','always','restart-always'],correctIndex:2},
+    {q:'How do you limit a container to 512MB of memory in Compose?',opts:['memory: 512','deploy.resources.limits.memory: 512m','max_memory: 512m','resources.memory: 512'],correctIndex:1},
+    {q:'What is a Docker secret?',opts:['An environment variable','A secure way to store sensitive data for Swarm services','A private Docker image','An encrypted volume'],correctIndex:1},
+    {q:'Why use health checks in production containers?',opts:['To improve image build speed','To allow orchestrators to route traffic only to healthy containers','To scan for vulnerabilities','To reduce image size'],correctIndex:1},
    ]},
   {id:'11_monitoring',num:11,title:'Monitoring & Observability',emoji:'📊',level:'Expert',lvlColor:'#a855f7',week:4,accent:'#22c55e',
    desc:'Prometheus, Grafana, and a full container observability stack.',hours:5,
@@ -172,6 +242,13 @@ const MODULES=[
     {id:'11-t2',title:'Deploy Prometheus + Grafana',desc:'docker compose up -- scrape cAdvisor + node-exporter',type:'build',xp:70},
     {id:'11-t3',title:'Build Grafana dashboard',desc:'Panels: CPU · memory · net I/O · container count · uptime',type:'practice',xp:80},
     {id:'11-t4',title:'Configure alert rules',desc:'PrometheusRule YAML + Alertmanager route + receiver',type:'build',xp:70},
+   ],
+   quiz:[
+    {q:'What are the three pillars of observability?',opts:['CPU, Memory, Disk','Metrics, Logs, Traces','Alerts, Dashboards, Reports','Build, Deploy, Monitor'],correctIndex:1},
+    {q:'Which tool scrapes and stores time-series metrics from containers?',opts:['Grafana','Loki','Prometheus','Jaeger'],correctIndex:2},
+    {q:'What does cAdvisor do?',opts:['Visualizes metrics dashboards','Collects container resource usage and performance metrics','Manages Docker images','Handles container networking'],correctIndex:1},
+    {q:'Which Grafana feature allows alerting when metrics cross a threshold?',opts:['Panels','Annotations','Alert rules','Transforms'],correctIndex:2},
+    {q:'What is the default port Prometheus listens on?',opts:['8080','3000','9090','9100'],correctIndex:2},
    ]},
   {id:'12_best_practices',num:12,title:'Best Practices',emoji:'🏆',level:'Expert',lvlColor:'#a855f7',week:4,accent:'#38bdf8',
    desc:'Master reference: the complete Docker best practices compendium.',hours:4,
@@ -181,8 +258,16 @@ const MODULES=[
     {id:'12-t2',title:'Audit an existing Dockerfile',desc:'Apply every checklist item — document all findings',type:'practice',xp:80},
     {id:'12-t3',title:'Author a review checklist',desc:'Write your personal 20-item Docker review checklist',type:'build',xp:80},
     {id:'12-t4',title:'Refactor a production stack',desc:'Apply all learned best practices to a real compose project',type:'build',xp:100},
+   ],
+   quiz:[
+    {q:'Which Dockerfile instruction is preferred as the container entrypoint?',opts:['RUN','CMD only','ENTRYPOINT with CMD for defaults','FROM'],correctIndex:2},
+    {q:'Why should you use specific image tags (not "latest") in production?',opts:['Latest images are slower','Specific tags ensure reproducible, predictable deployments','Latest images are larger','Docker Hub bans "latest" in production'],correctIndex:1},
+    {q:'What is the .dockerignore file used for?',opts:['Listing Docker networks to ignore','Excluding files from the build context to reduce image size','Blocking specific Docker commands','Ignoring Docker Hub authentication'],correctIndex:1},
+    {q:'Which Dockerfile instruction combines multiple RUN commands to reduce layers?',opts:['COMBINE','Chaining with && in a single RUN','MERGE','LAYER'],correctIndex:1},
+    {q:'What is the principle of least privilege in container security?',opts:['Containers should have maximum access for performance','Containers should only have the minimum permissions needed to function','All containers should run as root','Containers should share network namespaces'],correctIndex:1},
    ]},
 ];
+
 
 const ALL_TASKS=MODULES.flatMap(m=>m.tasks);
 const TOTAL_TASKS=ALL_TASKS.length;
@@ -234,7 +319,10 @@ const ACHIEVEMENTS=[
   {id:'week1',emoji:'🟢',name:'Foundations Built',desc:'All Week 1 / Beginner modules complete',fn:d=>MODULES.filter(m=>m.week===1).flatMap(m=>m.tasks).every(t=>d.completedTasks?.[t.id])},
   {id:'week2',emoji:'🟡',name:'Intermediate Certified',desc:'All Week 2 / Intermediate modules complete',fn:d=>MODULES.filter(m=>m.week===2).flatMap(m=>m.tasks).every(t=>d.completedTasks?.[t.id])},
   {id:'week3',emoji:'🔴',name:'Advanced Practitioner',desc:'All Week 3 / Advanced modules complete',fn:d=>MODULES.filter(m=>m.week===3).flatMap(m=>m.tasks).every(t=>d.completedTasks?.[t.id])},
-  {id:'all_done',emoji:'🏆',name:'Docker Engineer',desc:'All 12 modules completed — course graduate',fn:d=>ALL_TASKS.every(t=>d.completedTasks?.[t.id])},
+  {id:'all_done',emoji:'🏆',name:'Docker Engineer',desc:'All 12 modules and quizzes complete — course graduate',fn:d=>ALL_TASKS.every(t=>d.completedTasks?.[t.id])&&MODULES.every(m=>d.quizResults?.[m.id]?.passed)},
+  {id:'quiz_first',emoji:'🎓',name:'Quiz Ace',desc:'Passed your first lesson quiz',fn:d=>Object.values(d.quizResults||{}).some(r=>r.passed)},
+  {id:'quiz_perfect',emoji:'🌟',name:'Perfectionist',desc:'Scored 5/5 on any lesson quiz',fn:d=>Object.values(d.quizResults||{}).some(r=>r.score===5)},
+  {id:'quiz_all',emoji:'🏅',name:'Knowledge Master',desc:'Passed all 12 lesson quizzes',fn:d=>MODULES.every(m=>d.quizResults?.[m.id]?.passed)},
   {id:'streak3',emoji:'🔥',name:'Consistent',desc:'3-day study streak maintained',fn:d=>(d.streak||0)>=3},
   {id:'streak7',emoji:'⚡',name:'Dedicated',desc:'7-day study streak maintained',fn:d=>(d.streak||0)>=7},
   {id:'streak14',emoji:'💪',name:'Committed',desc:'14-day study streak maintained',fn:d=>(d.streak||0)>=14},
@@ -253,9 +341,11 @@ function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateStrin
 function fmtSec(s){if(!s||s<=0)return'0m';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return h>0?h+'h '+m+'m':m>0?m+'m '+sec+'s':sec+'s';}
 function fmtHrs(s){if(!s||s<=0)return'0.0';return(s/3600).toFixed(1);}
 
-function getModStatus(mod,ct){
+function getModStatus(mod,ct,qr){
   const prev=MODULES.find(m=>m.num===mod.num-1);
-  const prevOk=!prev||prev.tasks.every(t=>ct?.[t.id]);
+  const prevTasksOk=!prev||prev.tasks.every(t=>ct?.[t.id]);
+  const prevQuizOk=!prev||(qr?.[prev.id]?.passed)||false;
+  const prevOk=prevTasksOk&&prevQuizOk;
   const done=mod.tasks.filter(t=>ct?.[t.id]).length;
   if(!prevOk&&mod.num>1)return'locked';
   if(done===0)return'not_started';
@@ -289,7 +379,7 @@ const saveUsers=u=>localStorage.setItem('dlms_users',JSON.stringify(u));
 const getSession=()=>{try{return JSON.parse(localStorage.getItem('dlms_session')||'null')}catch{return null}};
 const saveSession=s=>localStorage.setItem('dlms_session',JSON.stringify(s));
 const clearSession=()=>localStorage.removeItem('dlms_session');
-const initData=()=>({completedTasks:{},moduleNotes:{},timeSpent:{},activityLog:[],streak:0,lastActivityDate:null,totalXp:0,enrolledAt:null,studyGoal:4});
+const initData=()=>({completedTasks:{},moduleNotes:{},timeSpent:{},activityLog:[],streak:0,lastActivityDate:null,totalXp:0,enrolledAt:null,studyGoal:4,quizResults:{}});
 const loadData=u=>{try{return JSON.parse(localStorage.getItem('dlms_data_'+u)||'null')||initData()}catch{return initData()}};
 const saveData=(u,d)=>localStorage.setItem('dlms_data_'+u,JSON.stringify(d));
 
@@ -531,7 +621,7 @@ function Dashboard({data,session,goModules,setView}){
   const pace=getPace(data,session);
 
   const currentMod=MODULES.find(m=>{
-    const st=getModStatus(m,ct);
+    const st=getModStatus(m,ct,data.quizResults||{});
     return st==='in_progress'||st==='not_started';
   });
 
@@ -715,18 +805,21 @@ function Dashboard({data,session,goModules,setView}){
 ═══════════════════════════════════════════════ */
 function ModulesList({data,onSelect,initialMod}){
   const ct=data.completedTasks||{};
+  const qr=data.quizResults||{};
   useEffect(()=>{if(initialMod)onSelect(initialMod);},[]);
 
   return html`<div className="ai py-8 px-6 w-full max-w-[1600px] mx-auto">
     <div className="mb-8">
       <h1 className="text-3xl font-black mb-2 tracking-tight">Docker Lessons</h1>
-      <p className="text-slate-500 text-sm">Read sequentially to build your Docker expertise from the ground up.</p>
+      <p className="text-slate-500 text-sm">Complete each lesson's tasks and pass the quiz to unlock the next one.</p>
     </div>
     
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       ${MODULES.map((mod,i)=>{
-        const st=getModStatus(mod,ct);
+        const st=getModStatus(mod,ct,qr);
         const done=mod.tasks.filter(t=>ct[t.id]).length;
+        const allDone=done===mod.tasks.length;
+        const quizPassed=!!qr[mod.id]?.passed;
         const p=Math.round((done/mod.tasks.length)*100);
         const locked=st==='locked';
         
@@ -752,14 +845,17 @@ function ModulesList({data,onSelect,initialMod}){
             ${!locked&&html`
               <div className="flex items-center justify-between gap-2 text-[10px] font-medium text-slate-500 border-t border-white/[0.05] pt-4 mt-auto">
                 <span className="flex items-center gap-1">⏱️ ~${mod.hours}h</span>
-                ${p===100?html`<span className="text-green-400 text-right">✓ Done</span>`
+                ${allDone&&quizPassed
+                  ?html`<span className="text-green-400 font-bold text-right">🎓 Quiz Passed</span>`
+                  :allDone
+                  ?html`<span className="text-amber-400 font-bold text-right">📝 Quiz Needed</span>`
                   :html`<span className="text-right"><span className="text-sky-400">${done}/${mod.tasks.length}</span> tasks</span>`}
               </div>
             `}
             
             ${locked&&html`
               <div className="mt-auto pt-4 border-t border-white/[0.05] text-[10px] text-amber-600/80 font-medium">
-                Requires: Lesson ${String(mod.num-1).padStart(2,'0')}
+                Requires: Lesson ${String(mod.num-1).padStart(2,'0')} + Quiz
               </div>
             `}
           </div>
@@ -772,7 +868,7 @@ function ModulesList({data,onSelect,initialMod}){
 /* ═══════════════════════════════════════════════
    MODULE DETAIL (with auto-timer)
 ═══════════════════════════════════════════════ */
-function ModuleDetail({mod,data,setData,onBack,toast,onViewFile}){
+function ModuleDetail({mod,data,setData,onBack,toast,onViewFile,onStartQuiz}){
   const startTs=useRef(Date.now());
   const[sessElapsed,setSessElapsed]=useState(0);
   const savedTime=data.timeSpent?.[mod.id]||0;
@@ -824,7 +920,10 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile}){
   const done=mod.tasks.filter(t=>data.completedTasks?.[t.id]).length;
   const totalXp=mod.tasks.reduce((s,t)=>s+t.xp,0);
   const totalSecs=savedTime+sessElapsed;
-  const st=getModStatus(mod,data.completedTasks||{});
+  const qr=data.quizResults||{};
+  const st=getModStatus(mod,data.completedTasks||{},qr);
+  const allTasksDone=done===mod.tasks.length;
+  const quizPassed=!!qr[mod.id]?.passed;
 
   return html`<div className="ai pb-12 max-w-4xl mx-auto px-6">
     <header className="mb-10 text-center pt-8 relative">
@@ -879,6 +978,212 @@ function ModuleDetail({mod,data,setData,onBack,toast,onViewFile}){
         <div className="text-[9px] text-slate-600 mt-3 flex justify-between">
           <span>Saves automatically.</span>
           <span>Time is tracked automatically.</span>
+        </div>
+      </div>
+    </div>
+    
+    ${allTasksDone&&html`
+      <div className="mt-8">
+        ${quizPassed
+          ?html`<div className="bg-green-500/10 border border-green-500/25 rounded-2xl p-6 flex items-center gap-5">
+            <div className="text-4xl">🎓</div>
+            <div className="flex-1">
+              <div className="text-sm font-black text-green-400 mb-1">Lesson Quiz Passed ✓</div>
+              <div className="text-xs text-slate-500">Score: ${qr[mod.id]?.score}/5 · Completed ${fmtDate(qr[mod.id]?.at)}</div>
+            </div>
+            <div className="text-[10px] font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-full">+50 XP Bonus</div>
+          </div>`
+          :html`<div className="bg-gradient-to-r from-sky-500/10 to-indigo-500/10 border border-sky-500/25 rounded-2xl p-6 flex items-center gap-5">
+            <div className="text-4xl">📝</div>
+            <div className="flex-1">
+              <div className="text-sm font-black text-sky-300 mb-1">All Tasks Complete! Take the Lesson Quiz</div>
+              <div className="text-xs text-slate-500">Pass 4/5 questions to unlock the next lesson and earn +50 bonus XP</div>
+            </div>
+            <button onClick=${()=>onStartQuiz(mod)}
+              className="px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-white text-xs font-black rounded-xl cursor-pointer border-none transition-all shadow-lg shadow-sky-500/25 hover:-translate-y-0.5">
+              Start Quiz →
+            </button>
+          </div>`}
+      </div>
+    `}
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   QUIZ SCREEN
+═══════════════════════════════════════════════ */
+function QuizScreen({mod,onClose,onPass,data,setData,toast}){
+  const[qi,setQi]=useState(0);
+  const[sel,setSel]=useState(null);
+  const[answered,setAnswered]=useState(false);
+  const[score,setScore]=useState(0);
+  const[quizDone,setQuizDone]=useState(false);
+
+  const q=mod.quiz[qi];
+  const total=mod.quiz.length;
+
+  const pick=idx=>{
+    if(answered)return;
+    setSel(idx);setAnswered(true);
+    const correct=idx===q.correctIndex;
+    setTimeout(()=>{
+      const ns=correct?score+1:score;
+      if(qi+1<total){setQi(qi+1);setSel(null);setAnswered(false);if(correct)setScore(ns);}
+      else{
+        const finalScore=correct?score+1:score;
+        setScore(finalScore);setQuizDone(true);
+        if(finalScore>=4){
+          setData(prev=>({...prev,
+            quizResults:{...prev.quizResults,[mod.id]:{score:finalScore,passed:true,at:new Date().toISOString()}},
+            totalXp:(prev.totalXp||0)+50
+          }));
+          toast('🎓 Quiz Passed! +50 XP','success');
+          setTimeout(()=>onPass(),2000);
+        }else{
+          setData(prev=>({...prev,
+            quizResults:{...prev.quizResults,[mod.id]:{score:finalScore,passed:false,at:new Date().toISOString()}}
+          }));
+        }
+      }
+    },900);
+  };
+
+  const retry=()=>{setQi(0);setSel(null);setAnswered(false);setScore(0);setQuizDone(false);};
+  const passed=score>=4;
+
+  return html`<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" style=${{animation:'fadeIn 0.2s ease both'}}>
+    <div className="quiz-pop relative bg-[#0d1628] border border-white/[0.1] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+      
+      <div className="px-7 pt-6 pb-4 border-b border-white/[0.07] flex items-center justify-between">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-sky-400 mb-1">Lesson ${String(mod.num).padStart(2,'0')} Quiz</div>
+          <div className="text-sm font-black">${mod.emoji} ${mod.title}</div>
+        </div>
+        <button onClick=${onClose} className="text-slate-600 hover:text-white transition-colors bg-transparent border-none cursor-pointer text-lg">✕</button>
+      </div>
+
+      ${!quizDone?html`
+        <div className="px-7 pt-5">
+          <div className="flex items-center justify-between text-[10px] text-slate-500 mb-2 font-mono">
+            <span>Question ${qi+1} of ${total}</span>
+            <span>${score} correct</span>
+          </div>
+          <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="h-full bg-sky-500 transition-all duration-500 rounded-full" style=${{width:((qi/total)*100)+'%'}}/>
+          </div>
+        </div>
+
+        <div className="px-7 pt-5 pb-3">
+          <p className="text-sm font-semibold leading-relaxed mb-5">${q.q}</p>
+          <div className="space-y-2.5">
+            ${q.opts.map((opt,i)=>{
+              let cls='bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.07] hover:border-white/[0.15]';
+              if(answered){
+                if(i===q.correctIndex)cls='bg-green-500/15 border-green-500/40 text-green-300';
+                else if(i===sel)cls='bg-red-500/15 border-red-500/40 text-red-400';
+                else cls='bg-white/[0.02] border-white/[0.04] opacity-40';
+              }
+              return html`<button key=${i} onClick=${()=>pick(i)}
+                className=${cx('w-full text-left px-4 py-3 rounded-xl border text-xs font-medium transition-all cursor-pointer',cls)}>
+                <span className="font-mono text-slate-500 mr-2">${String.fromCharCode(65+i)}.</span>${opt}
+              </button>`;
+            })}
+          </div>
+        </div>
+        <div className="px-7 pb-6 pt-2 text-[10px] text-slate-600 text-center">
+          ${answered?(sel===q.correctIndex?'✓ Correct! Moving to next question...':'✗ Incorrect — correct answer highlighted'):'Select an answer to continue'}
+        </div>
+      `:html`
+        <div className="px-7 py-8 text-center">
+          <div className="text-6xl mb-4">${score>=4?'🎉':'😞'}</div>
+          <h2 className="text-2xl font-black mb-2">${score>=4?'Quiz Passed!':'Not Quite'}</h2>
+          <p className="text-slate-400 text-sm mb-6">${score>=4?'Excellent work! The next lesson is now unlocked.':'You need 4/5 to pass. Review the lesson and try again!'}</p>
+          
+          <div className="flex items-center justify-center gap-3 mb-6">
+            ${mod.quiz.map((_,i)=>html`<div key=${i} className=${cx('w-8 h-8 rounded-full flex items-center justify-center text-sm font-black',
+              i<score?'bg-green-500/20 border border-green-500/40 text-green-400':'bg-red-500/10 border border-red-500/30 text-red-400')}>${i<score?'✓':'✗'}</div>`)}
+          </div>
+          
+          <div className="text-3xl font-black mb-1">${score}<span className="text-slate-600">/${total}</span></div>
+          <div className="text-xs text-slate-500 mb-8">questions correct · ${Math.round((score/total)*100)}%</div>
+          
+          ${score>=4
+            ?html`<div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 text-xs text-amber-300 font-medium">+50 XP bonus awarded! 🏆 Next lesson unlocked.</div>`
+            :html`<button onClick=${retry} className="px-8 py-3 bg-sky-500 hover:bg-sky-400 text-white text-sm font-black rounded-xl cursor-pointer border-none transition-all hover:-translate-y-0.5 shadow-lg shadow-sky-500/25">
+              Retry Quiz →
+            </button>`}
+        </div>
+      `}
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   CERTIFICATE VIEW
+═══════════════════════════════════════════════ */
+function CertificateView({session,data}){
+  const allTasksDone=ALL_TASKS.every(t=>data.completedTasks?.[t.id]);
+  const allQuizDone=MODULES.every(m=>data.quizResults?.[m.id]?.passed);
+  const isComplete=allTasksDone&&allQuizDone;
+  const completionDate=isComplete?new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}):null;
+  const sid=studentId(session.username);
+
+  const downloadCert=()=>{
+    const el=document.getElementById('cert-print');
+    el.style.display='flex';
+    window.print();
+    setTimeout(()=>{el.style.display='none';},1500);
+  };
+
+  return html`<div className="mt-8">
+    <div id="cert-print" style=${{display:'none',position:'fixed',inset:0,background:'linear-gradient(135deg,#0a1628 0%,#0d2040 50%,#0a1628 100%)',alignItems:'center',justifyContent:'center',zIndex:9999}}>
+      <div style=${{width:'820px',padding:'60px',border:'3px solid #f59e0b',borderRadius:'12px',background:'linear-gradient(135deg,#0f1f3d,#162845)',position:'relative',fontFamily:'Inter,sans-serif',color:'white',textAlign:'center'}}>
+        <div style=${{position:'absolute',inset:'12px',border:'1px solid rgba(245,158,11,0.3)',borderRadius:'8px',pointerEvents:'none'}}></div>
+        <div style=${{fontSize:'64px',marginBottom:'20px'}}>🐳</div>
+        <div style=${{fontSize:'11px',letterSpacing:'0.3em',textTransform:'uppercase',color:'#94a3b8',marginBottom:'16px'}}>Docker Learning Management System</div>
+        <div style=${{fontSize:'13px',letterSpacing:'0.2em',textTransform:'uppercase',color:'#f59e0b',marginBottom:'8px',fontWeight:'700'}}>Certificate of Completion</div>
+        <div style=${{width:'120px',height:'2px',background:'linear-gradient(90deg,transparent,#f59e0b,transparent)',margin:'0 auto 40px'}}></div>
+        <div style=${{fontSize:'13px',color:'#94a3b8',marginBottom:'10px'}}>This is to certify that</div>
+        <div style=${{fontSize:'38px',fontWeight:'900',background:'linear-gradient(135deg,#38bdf8,#818cf8)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',marginBottom:'6px'}}>${session.fullName||session.username}</div>
+        <div style=${{fontSize:'11px',color:'#64748b',marginBottom:'40px',letterSpacing:'0.1em'}}>${sid}</div>
+        <div style=${{fontSize:'13px',color:'#94a3b8',marginBottom:'8px'}}>has successfully completed all 12 modules and quizzes of the</div>
+        <div style=${{fontSize:'20px',fontWeight:'900',color:'white',marginBottom:'40px'}}>Docker Engineering Programme</div>
+        <div style=${{display:'flex',justifyContent:'center',gap:'50px',marginBottom:'40px',flexWrap:'wrap'}}>
+          ${MODULES.map(m=>html`<div key=${m.id} style=${{textAlign:'center'}}>
+            <div style=${{fontSize:'20px'}}>${m.emoji}</div>
+            <div style=${{fontSize:'8px',color:'#64748b',marginTop:'4px',maxWidth:'70px',lineHeight:'1.3'}}>${m.title}</div>
+          </div>`)}
+        </div>
+        <div style=${{width:'120px',height:'1px',background:'rgba(255,255,255,0.1)',margin:'0 auto 20px'}}></div>
+        <div style=${{fontSize:'12px',color:'#475569'}}>Completed: ${completionDate||'—'} · Total XP: ${data.totalXp||0}</div>
+      </div>
+    </div>
+
+    <div className="relative overflow-hidden rounded-2xl border" style=${{background:'linear-gradient(135deg,#0f1f3d,#162845)',borderColor:isComplete?'rgba(245,158,11,0.4)':'rgba(255,255,255,0.06)'}}>
+      <div className="px-8 py-7 flex items-center gap-8">
+        <div className="flex-shrink-0 w-40 h-28 rounded-xl border flex flex-col items-center justify-center gap-2 relative overflow-hidden" style=${{background:'linear-gradient(135deg,#0d1a30,#121f38)',borderColor:isComplete?'rgba(245,158,11,0.3)':'rgba(255,255,255,0.05)'}}>
+          <div style=${{fontSize:28}}>🐳</div>
+          <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-center px-2 leading-relaxed">Certificate of Completion</div>
+          ${!isComplete&&html`<div style=${{position:'absolute',inset:0,background:'rgba(0,0,0,0.65)',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'inherit'}}>
+            <div className="text-[9px] font-bold text-slate-500 text-center px-3">Complete all<br/>lessons to unlock</div>
+          </div>`}
+        </div>
+
+        <div className="flex-1">
+          <div className="text-[10px] font-bold uppercase tracking-widest mb-2" style=${{color:isComplete?'#f59e0b':'#64748b'}}>${isComplete?'🏆 Congratulations! Course Complete':'🔒 Certificate Locked'}</div>
+          <h3 className="text-xl font-black mb-2">Docker Engineer Certificate</h3>
+          <p className="text-xs text-slate-500 mb-4 leading-relaxed">${isComplete?'Issued to '+session.fullName+' · Completed '+completionDate:'Complete all 12 lessons and pass all 12 quizzes to earn your certificate.'}</p>
+          
+          ${isComplete
+            ?html`<button onClick=${downloadCert}
+                className="px-5 py-2.5 text-xs font-black rounded-xl cursor-pointer border-none transition-all hover:-translate-y-0.5"
+                style=${{background:'linear-gradient(135deg,#f59e0b,#d97706)',color:'white',boxShadow:'0 4px 20px rgba(245,158,11,0.35)'}}>
+                📄 Download Certificate PDF
+              </button>`
+            :html`<div className="flex gap-4 text-xs text-slate-600">
+                <span>✅ ${ALL_TASKS.filter(t=>data.completedTasks?.[t.id]).length}/${ALL_TASKS.length} tasks</span>
+                <span>🎓 ${MODULES.filter(m=>data.quizResults?.[m.id]?.passed).length}/${MODULES.length} quizzes</span>
+              </div>`}
         </div>
       </div>
     </div>
@@ -1103,6 +1408,9 @@ function Reports({data,session}){
         </div>
       </div>
 
+      <!-- Certificate -->
+      <${CertificateView} session=${session} data=${data}/>
+
       <!-- Achievements -->
       <div className="bg-white/[0.025] border border-white/[0.07] rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
@@ -1149,7 +1457,7 @@ function Notes({data,setData,toast}){
 
   const save=()=>{setData(prev=>({...prev,moduleNotes:{...prev.moduleNotes,[sel]:note}}));toast('Notes saved','success');};
   const hasNote=id=>(data.moduleNotes?.[id]||'').length>10;
-  const st=id=>getModStatus(MODULES.find(m=>m.id===id),ct);
+  const st=id=>getModStatus(MODULES.find(m=>m.id===id),ct,data.quizResults||{});
 
   return html`<div className="ai h-full overflow-y-auto">
     <div className="px-7 pt-6 pb-0 mb-5">
