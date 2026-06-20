@@ -820,8 +820,6 @@ function ModulesList({data,onSelect,initialMod}){
         const done=mod.tasks.filter(t=>ct[t.id]).length;
         const allDone=done===mod.tasks.length;
         const quizPassed=!!qr[mod.id]?.passed;
-  const currentTask=useMemo(()=>mod.tasks.find(t=>t.title.includes(activeFile))||mod.tasks[0],[mod,activeFile]);
-  const isCurrentTaskDone=currentTask?!!data.completedTasks?.[currentTask.id]:false;
         const p=Math.round((done/mod.tasks.length)*100);
         const locked=st==='locked';
         
