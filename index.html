@@ -84,7 +84,7 @@ const MODULES=[
    ]},
   {id:'02_images',num:2,title:'Docker Images',emoji:'📦',level:'Beginner',lvlColor:'#22c55e',week:1,accent:'#06b6d4',
    desc:'Dockerfile deep dive, image optimization, and layer caching strategy.',hours:5,
-   files:['dockerfile_guide.md','Dockerfile.optimized','image_layers.md'],
+   files:['dockerfile_guide.md'],
    tasks:[
     {id:'02-t1',title:'Read dockerfile_guide.md',desc:'All Dockerfile instructions explained with examples',type:'read',xp:20},
     {id:'02-t2',title:'Read image_layers.md',desc:'Layer caching mechanics and ideal ordering strategy',type:'read',xp:20},
@@ -101,7 +101,7 @@ const MODULES=[
    ]},
   {id:'03_compose',num:3,title:'Docker Compose',emoji:'🎼',level:'Beginner',lvlColor:'#22c55e',week:1,accent:'#4f46e5',
    desc:'Multi-container orchestration with Docker Compose v2.',hours:5,
-   files:['compose_guide.md','docker-compose.yml','docker-compose.prod.yml'],
+   files:['compose_guide.md','docker-compose.yml'],
    tasks:[
     {id:'03-t1',title:'Read compose_guide.md',desc:'Compose file syntax, services, networks, volumes',type:'read',xp:20},
     {id:'03-t2',title:'Run full-stack compose app',desc:'docker compose up -d — verify all services are healthy',type:'practice',xp:40},
@@ -118,7 +118,7 @@ const MODULES=[
    ]},
   {id:'04_networking',num:4,title:'Networking',emoji:'🌐',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#8b5cf6',
    desc:'Container networking, custom networks, and service discovery.',hours:4,
-   files:['networking_guide.md','docker-compose.yml'],
+   files:['networking_guide.md'],
    tasks:[
     {id:'04-t1',title:'Read networking_guide.md',desc:'Bridge · host · overlay · macvlan — all driver types',type:'read',xp:20},
     {id:'04-t2',title:'Create a custom bridge network',desc:'docker network create --driver bridge my-net',type:'practice',xp:40},
@@ -135,7 +135,7 @@ const MODULES=[
    ]},
   {id:'05_storage',num:5,title:'Storage & Volumes',emoji:'💾',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#10b981',
    desc:'Persistent data with named volumes, bind mounts, and tmpfs.',hours:4,
-   files:['volumes_guide.md','docker-compose.yml'],
+   files:['volumes_guide.md'],
    tasks:[
     {id:'05-t1',title:'Read volumes_guide.md',desc:'Named volumes · bind mounts · tmpfs — full comparison',type:'read',xp:20},
     {id:'05-t2',title:'Create & mount a named volume',desc:'docker volume create + --mount flag + inspect persistence',type:'practice',xp:40},
@@ -152,7 +152,7 @@ const MODULES=[
    ]},
   {id:'06_multi_stage',num:6,title:'Multi-Stage Builds',emoji:'⚙️',level:'Intermediate',lvlColor:'#f59e0b',week:2,accent:'#f97316',
    desc:'Dramatically reduce production image sizes with multi-stage Dockerfiles.',hours:3,
-   files:['multi_stage_guide.md','Dockerfile'],
+   files:['multi_stage_guide.md'],
    tasks:[
     {id:'06-t1',title:'Read multi_stage_guide.md',desc:'Builder pattern · COPY --from · target stages',type:'read',xp:20},
     {id:'06-t2',title:'Build the multi-stage Dockerfile',desc:'docker build -t app:ms . — measure final image size',type:'build',xp:50},
@@ -185,7 +185,7 @@ const MODULES=[
    ]},
   {id:'08_orchestration',num:8,title:'Orchestration',emoji:'🎯',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#6366f1',
    desc:'Docker Swarm mode clustering and Kubernetes migration patterns.',hours:6,
-   files:['swarm_guide.md','k8s_migration.md'],
+   files:['swarm_guide.md'],
    tasks:[
     {id:'08-t1',title:'Read swarm_guide.md',desc:'Swarm architecture · managers · workers · RAFT consensus',type:'read',xp:20},
     {id:'08-t2',title:'Read k8s_migration.md',desc:'Compose → Kubernetes migration patterns and tooling',type:'read',xp:20},
@@ -202,7 +202,7 @@ const MODULES=[
    ]},
   {id:'09_cicd',num:9,title:'CI/CD Integration',emoji:'🔄',level:'Advanced',lvlColor:'#ef4444',week:3,accent:'#14b8a6',
    desc:'Automated Docker builds, testing, and publishing via GitHub Actions & GitLab CI.',hours:5,
-   files:['cicd_guide.md','github_actions.yml','gitlab_ci.yml'],
+   files:['cicd_guide.md'],
    tasks:[
     {id:'09-t1',title:'Read cicd_guide.md',desc:'CI/CD pipeline architecture with Docker best practices',type:'read',xp:20},
     {id:'09-t2',title:'Analyse github_actions.yml',desc:'OIDC auth · build-push-action · layer caching in GHA',type:'read',xp:20},
